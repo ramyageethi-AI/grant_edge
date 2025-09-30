@@ -45,7 +45,10 @@ function App() {
               <a href="#how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors">How It Works</a>
               <a href="#testimonials" className="text-gray-600 hover:text-gray-900 transition-colors">Testimonials</a>
               <a href="#faq" className="text-gray-600 hover:text-gray-900 transition-colors">FAQ</a>
-              <button 
+              <button asChild>
+  <a href="/signup">Start Your Free Trial</a>
+</Button>
+
                 onClick={() => window.location.hash = '#signup'}
                 className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
               >
