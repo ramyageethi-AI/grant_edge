@@ -1,4 +1,5 @@
 import React from 'react';
+import Login from './components/Login';
 import { 
   ArrowRight, 
   Search, 
@@ -14,6 +15,13 @@ import {
 } from 'lucide-react';
 
 function App() {
+  // For demo purposes, you can toggle between login and home page
+  const showLogin = window.location.hash === '#login';
+  
+  if (showLogin) {
+    return <Login />;
+  }
+
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
@@ -44,7 +52,7 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-              Win More Grants with
+              Win Grants with
               <span className="text-blue-600 block">AI-Powered Intelligence</span>
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
