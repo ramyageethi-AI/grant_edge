@@ -1,5 +1,6 @@
 import React from 'react';
 import Login from './components/Login';
+import Signup from './components/Signup';
 import { 
   ArrowRight, 
   Search, 
@@ -17,9 +18,14 @@ import {
 function App() {
   // For demo purposes, you can toggle between login and home page
   const showLogin = window.location.hash === '#login';
+  const showSignup = window.location.hash === '#signup';
   
   if (showLogin) {
     return <Login />;
+  }
+  
+  if (showSignup) {
+    return <Signup />;
   }
 
   return (
@@ -40,7 +46,7 @@ function App() {
               <a href="#testimonials" className="text-gray-600 hover:text-gray-900 transition-colors">Testimonials</a>
               <a href="#faq" className="text-gray-600 hover:text-gray-900 transition-colors">FAQ</a>
               <button 
-                onClick={() => window.location.hash = '#login'}
+                onClick={() => window.location.hash = '#signup'}
                 className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Get Started Free
@@ -64,7 +70,7 @@ function App() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <button 
-                onClick={() => window.location.hash = '#login'}
+                onClick={() => window.location.hash = '#signup'}
                 className="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-all duration-200 transform hover:scale-105 shadow-lg flex items-center space-x-2"
               >
                 <span>Start Your Free Trial</span>
@@ -346,7 +352,7 @@ function App() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <button 
-              onClick={() => window.location.hash = '#login'}
+              onClick={() => window.location.hash = '#signup'}
               className="bg-white text-blue-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-50 transition-colors shadow-lg"
             >
               Start Your Free Trial
