@@ -1,4 +1,5 @@
 import React from 'react';
+import Login from './components/Login';
 import { 
   ArrowRight, 
   Search, 
@@ -14,6 +15,13 @@ import {
 } from 'lucide-react';
 
 function App() {
+  // For demo purposes, you can toggle between login and home page
+  const showLogin = window.location.hash === '#login';
+  
+  if (showLogin) {
+    return <Login />;
+  }
+
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
