@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { Target, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Target, Eye, EyeOff, Loader2, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
 interface AuthFormProps {
   mode: 'login' | 'signup';
   onToggleMode: () => void;
+  onBack?: () => void;
 }
 
-function AuthForm({ mode, onToggleMode }: AuthFormProps) {
+function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
   const { signIn, signUp } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -54,6 +55,17 @@ function AuthForm({ mode, onToggleMode }: AuthFormProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
+        {/* Back Button */}
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors mb-4"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Home</span>
+          </button>
+        )}
+
         {/* Logo and Brand */}
         <div className="text-center">
           <div className="flex items-center justify-center space-x-2 mb-6">

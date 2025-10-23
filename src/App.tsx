@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { useAuth } from './hooks/useAuth';
 import AuthForm from './components/AuthForm';
 import Dashboard from './components/Dashboard';
+import LandingPage from './components/LandingPage';
 import { Loader2 } from 'lucide-react';
 
 function App() {
   const { user, loading } = useAuth();
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const [showAuth, setShowAuth] = useState(false);
 
   if (loading) {
     return (
@@ -20,10 +22,17 @@ function App() {
   }
 
   if (!user) {
+    if (!showAuth) {
+      return (
+        <LandingPage onGetStarted={() => setShowAuth(true)} />
+      );
+    }
+    
     return (
       <AuthForm 
         mode={authMode} 
-        onToggleMode={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')} 
+        onToggleMode={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
+        onBack={() => setShowAuth(false)}
       />
     );
   }
