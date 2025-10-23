@@ -1,6 +1,7 @@
 import React from 'react';
 import Login from './components/Login';
 import Signup from './components/Signup';
+import OrganizationsTable from './components/OrganizationsTable';
 import { 
   ArrowRight, 
   Search, 
@@ -19,6 +20,7 @@ function App() {
   // For demo purposes, you can toggle between login and home page
   const showLogin = window.location.hash === '#login';
   const showSignup = window.location.hash === '#signup';
+  const showOrganizations = window.location.hash === '#organizations';
   
   if (showLogin) {
     return <Login />;
@@ -26,6 +28,10 @@ function App() {
   
   if (showSignup) {
     return <Signup />;
+  }
+  
+  if (showOrganizations) {
+    return <OrganizationsTable />;
   }
 
   return (
