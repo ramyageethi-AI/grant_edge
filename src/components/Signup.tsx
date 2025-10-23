@@ -37,15 +37,10 @@ function Signup() {
               <span className="text-xl font-bold text-gray-900">GrantEdge AI</span>
             </div>
             <div className="hidden md:flex items-center space-x-8">
-              <button 
-                onClick={() => window.location.hash = ''}
-                className="text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                Home
-              </button>
-              <a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">Features</a>
-              <a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">Pricing</a>
-              <a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">Contact</a>
+              <a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">Home</a>
+              <a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">RFPs</a>
+              <a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">My Proposals</a>
+              <a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">Analytics</a>
             </div>
           </div>
         </div>

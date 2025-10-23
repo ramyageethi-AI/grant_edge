@@ -28,16 +28,10 @@ function LandingPage({ onGetStarted }: { onGetStarted: () => void }) {
               <span className="text-xl font-bold text-gray-900">GrantEdge AI</span>
             </div>
             <div className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-gray-600 hover:text-gray-900 transition-colors">Features</a>
-              <a href="#how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors">How It Works</a>
-              <a href="#pricing" className="text-gray-600 hover:text-gray-900 transition-colors">Pricing</a>
-              <a href="#contact" className="text-gray-600 hover:text-gray-900 transition-colors">Contact</a>
-              <button
-                onClick={onGetStarted}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Get Started Free
-              </button>
+              <a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">Home</a>
+              <a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">RFPs</a>
+              <a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">My Proposals</a>
+              <a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">Analytics</a>
             </div>
           </div>
         </div>
