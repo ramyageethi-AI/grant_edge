@@ -53,7 +53,7 @@ function LandingPage({ onGetStarted }: { onGetStarted: () => void }) {
                 onClick={onGetStarted}
                 className="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-all duration-200 transform hover:scale-105 shadow-lg flex items-center space-x-2"
               >
-                <span>Start Your Free Trial</span>
+                <span>Request for Proposals</span>
                 <ArrowRight className="w-5 h-5" />
               </button>
               <p className="text-sm text-gray-500">No credit card required • 14-day free trial</p>
@@ -187,82 +187,6 @@ function LandingPage({ onGetStarted }: { onGetStarted: () => void }) {
         </div>
       </section>
 
-      {/* Social Proof Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Trusted by Health & Social Welfare Leaders
-            </h2>
-            <p className="text-xl text-gray-600">
-              Join hundreds of organizations already winning more grants with GrantEdge AI
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-gray-50 p-8 rounded-xl">
-              <div className="flex items-center mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <CheckCircle key={i} className="w-5 h-5 text-green-500" />
-                ))}
-              </div>
-              <p className="text-gray-700 mb-4 italic">
-                "GrantEdge AI helped us secure $2.3M in funding last year. The AI suggestions were spot-on and saved us countless hours of research and writing."
-              </p>
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                  <span className="text-blue-600 font-semibold">SH</span>
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900">Sarah Henderson</p>
-                  <p className="text-gray-600 text-sm">Executive Director, Community Health Alliance</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gray-50 p-8 rounded-xl">
-              <div className="flex items-center mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <CheckCircle key={i} className="w-5 h-5 text-green-500" />
-                ))}
-              </div>
-              <p className="text-gray-700 mb-4 italic">
-                "As a small nonprofit, we couldn't afford a grant writer. GrantEdge AI leveled the playing field and helped us compete with larger organizations."
-              </p>
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                  <span className="text-green-600 font-semibold">MR</span>
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900">Michael Rodriguez</p>
-                  <p className="text-gray-600 text-sm">Founder, Youth Mental Health Initiative</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gray-50 p-8 rounded-xl">
-              <div className="flex items-center mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <CheckCircle key={i} className="w-5 h-5 text-green-500" />
-                ))}
-              </div>
-              <p className="text-gray-700 mb-4 italic">
-                "The grant matching feature is incredible. We discovered funding opportunities we never would have found on our own. Our success rate tripled."
-              </p>
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
-                  <span className="text-purple-600 font-semibold">LT</span>
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900">Lisa Thompson</p>
-                  <p className="text-gray-600 text-sm">Program Director, Rural Healthcare Network</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* FAQ Section */}
       <section className="py-20 bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -328,7 +252,7 @@ function LandingPage({ onGetStarted }: { onGetStarted: () => void }) {
             onClick={onGetStarted}
             className="bg-white text-blue-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 transition-all duration-200 transform hover:scale-105 shadow-lg inline-flex items-center space-x-2"
           >
-            <span>Start Your Free Trial</span>
+            <span>Request for Proposals</span>
             <ArrowRight className="w-5 h-5" />
           </button>
           <p className="text-blue-100 text-sm mt-4">14-day free trial • No credit card required • Cancel anytime</p>
