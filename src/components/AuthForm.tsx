@@ -39,7 +39,14 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
         if (error) throw error;
       }
     } catch (err: any) {
-      setError(err.message);
+      // Handle specific Supabase rate limit errors
+      if (err.message?.includes('over_email_send_rate_limit')) {
+        setError('Too many requests. Please wait 40 seconds before trying again for security purposes.');
+      } else if (err.message?.includes('rate_limit')) {
+        setError('Rate limit exceeded. Please wait a moment before trying again.');
+      } else {
+        setError(err.message);
+      }
     } finally {
       setLoading(false);
     }
