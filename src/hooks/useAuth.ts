@@ -33,8 +33,13 @@ export function useAuth() {
       password,
       options: {
         data: userData,
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
+    
+    // Log the response for debugging
+    console.log('SignUp response:', { data, error });
+    
     return { data, error };
   };
 
@@ -43,6 +48,10 @@ export function useAuth() {
       email,
       password,
     });
+    
+    // Log the response for debugging
+    console.log('SignIn response:', { data, error });
+    
     return { data, error };
   };
 

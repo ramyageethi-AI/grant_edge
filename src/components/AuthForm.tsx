@@ -40,7 +40,13 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
           organization_name: formData.organizationName,
           role: formData.role,
         });
-        if (error) throw error;
+        if (error) {
+          throw error;
+        } else {
+          // Show success message for signup
+          setError(null);
+          // You might want to show a success message here
+        }
       }
     } catch (err: any) {
       // Handle specific Supabase rate limit errors
@@ -48,8 +54,16 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
         setError('Too many requests. Please wait 40 seconds before trying again for security purposes.');
       } else if (err.message?.includes('rate_limit')) {
         setError('Rate limit exceeded. Please wait a moment before trying again.');
+      } else if (err.message?.includes('invalid_credentials') || err.message?.includes('Invalid login credentials')) {
+        setError('Invalid email or password. Please check your credentials and try again.');
+      } else if (err.message?.includes('Email not confirmed')) {
+        setError('Please check your email and click the confirmation link before signing in.');
+      } else if (err.message?.includes('User not found')) {
+        setError('No account found with this email address. Please sign up first.');
+      } else if (err.message?.includes('signup_disabled')) {
+        setError('Account creation is currently disabled. Please contact support.');
       } else {
-        setError(err.message);
+        setError(err.message || 'An unexpected error occurred. Please try again.');
       }
     } finally {
       setLoading(false);
