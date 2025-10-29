@@ -1,11 +1,25 @@
 import React, { useState } from 'react';
 import { Target, Eye, EyeOff, Loader2, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { supabase } from '../lib/supabase';
 
 interface AuthFormProps {
   mode: 'login' | 'signup';
   onToggleMode: () => void;
   onBack?: () => void;
+}
+
+interface SignupStep1Data {
+  email: string;
+  password: string;
+  fullName: string;
+  role: string;
+}
+
+interface SignupStep2Data {
+  organizationName: string;
+  sector: string;
+  organizationSize: string;
 }
 
 function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
@@ -17,6 +31,18 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
   const [resetEmail, setResetEmail] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
+  const [signupStep, setSignupStep] = useState(1);
+  const [step1Data, setStep1Data] = useState<SignupStep1Data>({
+    email: '',
+    password: '',
+    fullName: '',
+    role: ''
+  });
+  const [step2Data, setStep2Data] = useState<SignupStep2Data>({
+    organizationName: '',
+    sector: '',
+    organizationSize: ''
+  });
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -25,29 +51,69 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
     role: ''
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleStep1Submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSignupStep(2);
+  };
+
+  const handleStep2Submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      if (mode === 'login') {
-        const { error } = await signIn(formData.email, formData.password);
-        if (error) throw error;
-      } else {
-        const { error } = await signUp(formData.email, formData.password, {
-          full_name: formData.fullName,
-          organization_name: formData.organizationName,
-          role: formData.role,
-        });
-        if (error) {
-          throw error;
-        } else {
-          // Show success message for signup
-          setError(null);
-          // You might want to show a success message here
+      // Step 1: Create auth user
+      const { data: authData, error: authError } = await signUp(
+        step1Data.email, 
+        step1Data.password, 
+        {
+          full_name: step1Data.fullName,
+          role: step1Data.role,
+        }
+      );
+
+      if (authError) throw authError;
+
+      if (authData.user) {
+        // Step 2: Create organization record
+        const { error: orgError } = await supabase
+          .from('organizations')
+          .insert({
+            id: authData.user.id,
+            user_id: authData.user.id,
+            name: step2Data.organizationName,
+            sector: step2Data.sector,
+            organization_size: step2Data.organizationSize
+          });
+
+        if (orgError) {
+          console.error('Organization creation error:', orgError);
+          throw new Error('Failed to create organization profile. Please contact support.');
         }
       }
+    } catch (err: any) {
+      if (err.message?.includes('over_email_send_rate_limit')) {
+        setError('Too many requests. Please wait 40 seconds before trying again for security purposes.');
+      } else if (err.message?.includes('rate_limit')) {
+        setError('Rate limit exceeded. Please wait a moment before trying again.');
+      } else if (err.message?.includes('signup_disabled')) {
+        setError('Account creation is currently disabled. Please contact support.');
+      } else {
+        setError(err.message || 'An unexpected error occurred. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { error } = await signIn(formData.email, formData.password);
+      if (error) throw error;
     } catch (err: any) {
       // Handle specific Supabase rate limit errors
       if (err.message?.includes('over_email_send_rate_limit')) {
@@ -68,6 +134,20 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleStep1InputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setStep1Data({
+      ...step1Data,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleStep2InputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setStep2Data({
+      ...step2Data,
+      [e.target.name]: e.target.value
+    });
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -92,6 +172,7 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
       setResetLoading(false);
     }
   };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -115,14 +196,36 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
             <span className="text-2xl font-bold text-gray-900">GrantEdge AI</span>
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            {mode === 'login' ? 'Welcome Back' : 'Start Winning More Grants'}
+            {mode === 'login' 
+              ? 'Welcome Back' 
+              : signupStep === 1 
+                ? 'Create Your Account' 
+                : 'Tell Us About Your Organization'
+            }
           </h1>
           <p className="text-gray-600">
             {mode === 'login' 
               ? 'Sign in to access your grant management dashboard' 
-              : 'Create your account and discover funding opportunities'
+              : signupStep === 1
+                ? 'Enter your account details to get started'
+                : 'Help us personalize your grant discovery experience'
             }
           </p>
+          {mode === 'signup' && (
+            <div className="flex items-center justify-center space-x-4 mt-4">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
+                signupStep >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
+              }`}>
+                1
+              </div>
+              <div className={`w-16 h-1 ${signupStep >= 2 ? 'bg-blue-600' : 'bg-gray-200'}`}></div>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
+                signupStep >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
+              }`}>
+                2
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Auth Form */}
@@ -203,7 +306,303 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
               )}
             </div>
           ) : (
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <>
+          {mode === 'login' ? (
+            <form className="space-y-6" onSubmit={handleLoginSubmit}>
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                  {error}
+                </div>
+              )}
+
+              <div>
+                <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  placeholder="Enter your email address"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Password
+                </label>
+                <div className="relative">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
+                    required
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    placeholder="Enter your password"
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors"
+                >
+                  Forgot your password?
+                </button>
+              </div>
+
+              <div className="pt-4">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-blue-600 text-white py-4 px-6 rounded-lg text-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-[1.02] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                      Signing In...
+                    </>
+                  ) : (
+                    'Sign In'
+                  )}
+                </button>
+              </div>
+            </form>
+          ) : signupStep === 1 ? (
+            <form className="space-y-6" onSubmit={handleStep1Submit}>
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                  {error}
+                </div>
+              )}
+
+              <div>
+                <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Full Name
+                </label>
+                <input
+                  id="fullName"
+                  name="fullName"
+                  type="text"
+                  required
+                  value={step1Data.fullName}
+                  onChange={handleStep1InputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  placeholder="Enter your full name"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={step1Data.email}
+                  onChange={handleStep1InputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  placeholder="Enter your email address"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Password
+                </label>
+                <div className="relative">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="new-password"
+                    required
+                    value={step1Data.password}
+                    onChange={handleStep1InputChange}
+                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    placeholder="Create a secure password"
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="role" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Role/Position
+                </label>
+                <select
+                  id="role"
+                  name="role"
+                  required
+                  value={step1Data.role}
+                  onChange={handleStep1InputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                >
+                  <option value="">Select your role</option>
+                  <option value="executive-director">Executive Director</option>
+                  <option value="program-director">Program Director</option>
+                  <option value="development-director">Development Director</option>
+                  <option value="grant-writer">Grant Writer</option>
+                  <option value="founder">Founder/CEO</option>
+                  <option value="program-manager">Program Manager</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div className="pt-4">
+                <button
+                  type="submit"
+                  className="w-full bg-blue-600 text-white py-4 px-6 rounded-lg text-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-[1.02] shadow-lg"
+                >
+                  Continue to Organization Details
+                </button>
+              </div>
+            </form>
+          ) : (
+            <form className="space-y-6" onSubmit={handleStep2Submit}>
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                  {error}
+                </div>
+              )}
+
+              <div>
+                <label htmlFor="organizationName" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Organization Name
+                </label>
+                <input
+                  id="organizationName"
+                  name="organizationName"
+                  type="text"
+                  required
+                  value={step2Data.organizationName}
+                  onChange={handleStep2InputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  placeholder="Enter your organization name"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="sector" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Sector
+                </label>
+                <select
+                  id="sector"
+                  name="sector"
+                  required
+                  value={step2Data.sector}
+                  onChange={handleStep2InputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                >
+                  <option value="">Select your sector</option>
+                  <option value="health">Health</option>
+                  <option value="social_welfare">Social Welfare</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="organizationSize" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Organization Size
+                </label>
+                <select
+                  id="organizationSize"
+                  name="organizationSize"
+                  required
+                  value={step2Data.organizationSize}
+                  onChange={handleStep2InputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                >
+                  <option value="">Select organization size</option>
+                  <option value="small">Small (1-50 employees)</option>
+                  <option value="medium">Medium (51-250 employees)</option>
+                </select>
+              </div>
+
+              <div className="flex space-x-4 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setSignupStep(1)}
+                  className="flex-1 bg-gray-200 text-gray-800 py-4 px-6 rounded-lg text-lg font-semibold hover:bg-gray-300 transition-all duration-200"
+                >
+                  Back
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 bg-blue-600 text-white py-4 px-6 rounded-lg text-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-[1.02] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                      Creating Account...
+                    </>
+                  ) : (
+                    'Create My Account'
+                  )}
+                </button>
+              </div>
+            </form>
+          )}
+          </>
+          )}
+
+          {!showForgotPassword && (
+            <div className="mt-8 text-center">
+              <div className="text-gray-600 text-sm">
+                {mode === 'login' ? "Don't have an account? " : "Already have an account? "}
+                <button
+                  onClick={() => {
+                    onToggleMode();
+                    setSignupStep(1);
+                    setError(null);
+                  }}
+                  className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                >
+                  {mode === 'login' ? 'Sign up for free' : 'Sign in here'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
                 {error}
