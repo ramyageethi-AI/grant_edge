@@ -115,13 +115,13 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
       const { error } = await signIn(formData.email, formData.password);
       if (error) throw error;
     } catch (err: any) {
-      // Handle specific Supabase rate limit errors
+      // Handle specific Supabase errors
       if (err.message?.includes('over_email_send_rate_limit')) {
         setError('Too many requests. Please wait 40 seconds before trying again for security purposes.');
       } else if (err.message?.includes('rate_limit')) {
         setError('Rate limit exceeded. Please wait a moment before trying again.');
       } else if (err.message?.includes('invalid_credentials') || err.message?.includes('Invalid login credentials')) {
-        setError('Invalid email or password. Please check your credentials and try again.');
+        setError('Invalid email or password. Please double-check your credentials and try again. If you forgot your password, use the "Forgot your password?" link below.');
       } else if (err.message?.includes('Email not confirmed')) {
         setError('Please check your email and click the confirmation link before signing in.');
       } else if (err.message?.includes('User not found')) {
