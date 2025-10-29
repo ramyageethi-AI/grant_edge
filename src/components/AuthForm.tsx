@@ -75,11 +75,13 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
       if (authError) throw authError;
 
       if (authData.user) {
-        // Step 2: Create organization record
+        // Wait a moment for the session to be established
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Step 2: Create organization record with authenticated session
         const { error: orgError } = await supabase
           .from('organizations')
           .insert({
-            id: authData.user.id,
             user_id: authData.user.id,
             name: step2Data.organizationName,
             sector: step2Data.sector,
