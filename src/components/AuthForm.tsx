@@ -113,17 +113,20 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
     setLoading(true);
     setError(null);
 
+    console.log('Attempting login with email:', formData.email);
     try {
       const { error } = await signIn(formData.email, formData.password);
       if (error) throw error;
     } catch (err: any) {
+      console.error('Login error details:', err);
+      
       // Handle specific Supabase errors
       if (err.message?.includes('over_email_send_rate_limit')) {
         setError('Too many requests. Please wait 40 seconds before trying again for security purposes.');
       } else if (err.message?.includes('rate_limit')) {
         setError('Rate limit exceeded. Please wait a moment before trying again.');
       } else if (err.message?.includes('invalid_credentials') || err.message?.includes('Invalid login credentials')) {
-        setError('Invalid email or password. Please double-check your credentials and try again. If you forgot your password, use the "Forgot your password?" link below.');
+        setError('No account found with these credentials. Please check your email and password, or create a new account if you haven\'t signed up yet.');
       } else if (err.message?.includes('Email not confirmed')) {
         setError('Please check your email and click the confirmation link before signing in.');
       } else if (err.message?.includes('User not found')) {
@@ -592,6 +595,7 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
                     onToggleMode();
                     setSignupStep(1);
                     setError(null);
+                    setFormData({ email: '', password: '', fullName: '', organizationName: '', role: '' });
                   }}
                   className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
                 >
