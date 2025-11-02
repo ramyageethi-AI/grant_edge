@@ -84,21 +84,27 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
           // Don't throw error here as auth user was created successfully
         }
         
-        // Create a basic organization record for the user
-        const { error: orgError } = await supabase
-          .from('organizations')
-          .insert({
-            user_id: authData.user.id,
-            name: `${step1Data.fullName}'s Organization`,
-            sector: 'nonprofit',
-            organization_size: 'small',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
+        // Wait for the session to be established before creating organization
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Get the current session to ensure we're authenticated
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+          // Create a basic organization record for the user
+          const { error: orgError } = await supabase
+            .from('organizations')
+            .insert({
+              user_id: authData.user.id,
+              name: `${step1Data.fullName}'s Organization`,
+              sector: 'nonprofit',
+              organization_size: 'small'
+            });
 
-        if (orgError) {
-          console.error('Organization creation error:', orgError);
-          // Don't throw error here as auth user was created successfully
+          if (orgError) {
+            console.error('Organization creation error:', orgError);
+            // Don't throw error here as auth user was created successfully
+          }
         }
       }
     } catch (err: any) {
