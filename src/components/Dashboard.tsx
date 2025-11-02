@@ -169,24 +169,155 @@ function Dashboard() {
 
   const renderRFPs = () => (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Available RFPs</h1>
-        <div className="flex items-center space-x-4">
-          <div className="relative">
-            <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search RFPs..."
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+      <div className="max-w-4xl mx-auto">
+        {/* Header Section */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Tell us about your organisation</h1>
+          <p className="text-xl text-gray-600">Help us personalize your grant discovery experience</p>
         </div>
-      </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 text-center">
-        <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">No RFPs Available</h3>
-        <p className="text-gray-600">Check back later for new funding opportunities.</p>
+        {/* Organization Form */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-12">
+          <form className="space-y-8">
+            {/* Row 1: Name and Website */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div>
+                <label htmlFor="orgName" className="block text-sm font-semibold text-gray-700 mb-3">
+                  Name of the organisation
+                </label>
+                <input
+                  id="orgName"
+                  type="text"
+                  className="w-full px-4 py-4 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  placeholder="Enter your organisation name"
+                />
+              </div>
+              <div>
+                <label htmlFor="website" className="block text-sm font-semibold text-gray-700 mb-3">
+                  Website
+                </label>
+                <input
+                  id="website"
+                  type="url"
+                  className="w-full px-4 py-4 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  placeholder="https://www.yourorganisation.com"
+                />
+              </div>
+            </div>
+
+            {/* Row 2: Sector and Organisation Size */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div>
+                <label htmlFor="sector" className="block text-sm font-semibold text-gray-700 mb-3">
+                  Sector
+                </label>
+                <select
+                  id="sector"
+                  className="w-full px-4 py-4 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                >
+                  <option value="">Select your sector</option>
+                  <option value="healthcare">Healthcare</option>
+                  <option value="education">Education</option>
+                  <option value="social-services">Social Services</option>
+                  <option value="environment">Environment</option>
+                  <option value="arts-culture">Arts & Culture</option>
+                  <option value="community-development">Community Development</option>
+                  <option value="research">Research</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label htmlFor="orgSize" className="block text-sm font-semibold text-gray-700 mb-3">
+                  Organisation size
+                </label>
+                <select
+                  id="orgSize"
+                  className="w-full px-4 py-4 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                >
+                  <option value="">Select organisation size</option>
+                  <option value="small">Small (1-50 employees)</option>
+                  <option value="medium">Medium (51-250 employees)</option>
+                  <option value="large">Large (250+ employees)</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Row 3: Goal/Objective */}
+            <div>
+              <label htmlFor="objective" className="block text-sm font-semibold text-gray-700 mb-3">
+                Goal/Objective
+              </label>
+              <textarea
+                id="objective"
+                rows={4}
+                className="w-full px-4 py-4 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                placeholder="Describe your organisation's main goals and objectives..."
+              />
+            </div>
+
+            {/* Row 4: Area of Interest and Country */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div>
+                <label htmlFor="areaOfInterest" className="block text-sm font-semibold text-gray-700 mb-3">
+                  Area of interest
+                </label>
+                <input
+                  id="areaOfInterest"
+                  type="text"
+                  className="w-full px-4 py-4 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  placeholder="e.g., Mental health, Youth development"
+                />
+              </div>
+              <div>
+                <label htmlFor="country" className="block text-sm font-semibold text-gray-700 mb-3">
+                  Country of Work
+                </label>
+                <input
+                  id="country"
+                  type="text"
+                  className="w-full px-4 py-4 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  placeholder="Enter your primary country of operation"
+                />
+              </div>
+            </div>
+
+            {/* Row 5: Annual Report and Common Donors */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div>
+                <label htmlFor="annualReport" className="block text-sm font-semibold text-gray-700 mb-3">
+                  Annual report
+                </label>
+                <input
+                  id="annualReport"
+                  type="url"
+                  className="w-full px-4 py-4 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  placeholder="Link to your latest annual report"
+                />
+              </div>
+              <div>
+                <label htmlFor="commonDonors" className="block text-sm font-semibold text-gray-700 mb-3">
+                  Common donors/Funders
+                </label>
+                <input
+                  id="commonDonors"
+                  type="text"
+                  className="w-full px-4 py-4 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  placeholder="e.g., Gates Foundation, Local Government"
+                />
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="pt-8 text-center">
+              <button
+                type="submit"
+                className="bg-blue-600 text-white px-12 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-105 shadow-lg"
+              >
+                Save Organisation Details
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
