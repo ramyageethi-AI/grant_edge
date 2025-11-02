@@ -53,7 +53,53 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
 
   const handleStep1Submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSignupStep(2);
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Create auth user directly without going to step 2
+      const { data: authData, error: authError } = await signUp(
+        step1Data.email, 
+        step1Data.password, 
+        {
+          full_name: step1Data.fullName,
+        }
+      );
+
+      if (authError) throw authError;
+
+      if (authData.user) {
+        // Wait a moment for the session to be established
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Create a basic organization record
+        const { error: orgError } = await supabase
+          .from('organizations')
+          .insert({
+            user_id: authData.user.id,
+            name: `${step1Data.fullName}'s Organization`,
+            sector: 'other',
+            organization_size: 'small'
+          });
+
+        if (orgError) {
+          console.error('Organization creation error:', orgError);
+          throw new Error('Failed to create organization profile. Please contact support.');
+        }
+      }
+    } catch (err: any) {
+      if (err.message?.includes('over_email_send_rate_limit')) {
+        setError('Too many requests. Please wait 40 seconds before trying again for security purposes.');
+      } else if (err.message?.includes('rate_limit')) {
+        setError('Rate limit exceeded. Please wait a moment before trying again.');
+      } else if (err.message?.includes('signup_disabled')) {
+        setError('Account creation is currently disabled. Please contact support.');
+      } else {
+        setError(err.message || 'An unexpected error occurred. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleStep2Submit = async (e: React.FormEvent) => {
@@ -203,34 +249,15 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
             {mode === 'login' 
               ? 'Welcome Back' 
-              : signupStep === 1 
-                ? 'Create Your Account' 
-                : 'Tell Us About Your Organization'
+              : 'Create Account'
             }
           </h1>
           <p className="text-gray-600">
             {mode === 'login' 
               ? 'Sign in to access your grant management dashboard' 
-              : signupStep === 1
-                ? 'Enter your account details to get started'
-                : 'Help us personalize your grant discovery experience'
+              : 'Enter your details to get started'
             }
           </p>
-          {mode === 'signup' && (
-            <div className="flex items-center justify-center space-x-4 mt-4">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                signupStep >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
-              }`}>
-                1
-              </div>
-              <div className={`w-16 h-1 ${signupStep >= 2 ? 'bg-blue-600' : 'bg-gray-200'}`}></div>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                signupStep >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
-              }`}>
-                2
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Auth Form */}
@@ -395,6 +422,7 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
               </div>
             </form>
           ) : signupStep === 1 ? (
+          ) : (
             <form className="space-y-6" onSubmit={handleStep1Submit}>
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
@@ -404,7 +432,7 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
 
               <div>
                 <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Full Name
+                  Name
                 </label>
                 <input
                   id="fullName"
@@ -414,7 +442,7 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
                   value={step1Data.fullName}
                   onChange={handleStep1InputChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  placeholder="Enter your full name"
+                  placeholder="Enter your name"
                 />
               </div>
 
@@ -465,120 +493,13 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
                 </div>
               </div>
 
-              <div>
-                <label htmlFor="role" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Role/Position
-                </label>
-                <select
-                  id="role"
-                  name="role"
-                  required
-                  value={step1Data.role}
-                  onChange={handleStep1InputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                >
-                  <option value="">Select your role</option>
-                  <option value="executive-director">Executive Director</option>
-                  <option value="program-director">Program Director</option>
-                  <option value="development-director">Development Director</option>
-                  <option value="grant-writer">Grant Writer</option>
-                  <option value="founder">Founder/CEO</option>
-                  <option value="program-manager">Program Manager</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
 
               <div className="pt-4">
                 <button
                   type="submit"
                   className="w-full bg-blue-600 text-white py-4 px-6 rounded-lg text-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-[1.02] shadow-lg"
                 >
-                  Continue to Organization Details
-                </button>
-              </div>
-            </form>
-          ) : (
-            <form className="space-y-6" onSubmit={handleStep2Submit}>
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                  {error}
-                </div>
-              )}
-
-              <div>
-                <label htmlFor="organizationName" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Organization Name
-                </label>
-                <input
-                  id="organizationName"
-                  name="organizationName"
-                  type="text"
-                  required
-                  value={step2Data.organizationName}
-                  onChange={handleStep2InputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  placeholder="Enter your organization name"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="sector" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Sector
-                </label>
-                <select
-                  id="sector"
-                  name="sector"
-                  required
-                  value={step2Data.sector}
-                  onChange={handleStep2InputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                >
-                  <option value="">Select your sector</option>
-                  <option value="health">Health</option>
-                  <option value="social_welfare">Social Welfare</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="organizationSize" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Organization Size
-                </label>
-                <select
-                  id="organizationSize"
-                  name="organizationSize"
-                  required
-                  value={step2Data.organizationSize}
-                  onChange={handleStep2InputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                >
-                  <option value="">Select organization size</option>
-                  <option value="small">Small (1-50 employees)</option>
-                  <option value="medium">Medium (51-250 employees)</option>
-                </select>
-              </div>
-
-              <div className="flex space-x-4 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setSignupStep(1)}
-                  className="flex-1 bg-gray-200 text-gray-800 py-4 px-6 rounded-lg text-lg font-semibold hover:bg-gray-300 transition-all duration-200"
-                >
-                  Back
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 bg-blue-600 text-white py-4 px-6 rounded-lg text-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-[1.02] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                      Creating Account...
-                    </>
-                  ) : (
-                    'Create My Account'
-                  )}
+                  Signup
                 </button>
               </div>
             </form>
@@ -596,6 +517,7 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
                     setSignupStep(1);
                     setError(null);
                     setFormData({ email: '', password: '', fullName: '', organizationName: '', role: '' });
+                    setStep1Data({ email: '', password: '', fullName: '', role: '' });
                   }}
                   className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
                 >
