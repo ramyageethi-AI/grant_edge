@@ -28,10 +28,12 @@ function LandingPage({ onGetStarted }: { onGetStarted: () => void }) {
               <span className="text-xl font-bold text-gray-900">GrantEdge AI</span>
             </div>
             <div className="hidden md:flex items-center space-x-8">
-              <a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">Home</a>
-              <a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">RFPs</a>
-              <a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">My Proposals</a>
-              <a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">Analytics</a>
+              <button
+                onClick={onGetStarted}
+                className="text-gray-600 hover:text-gray-900 transition-colors font-medium"
+              >
+                Sign In
+              </button>
             </div>
           </div>
         </div>
@@ -53,7 +55,7 @@ function LandingPage({ onGetStarted }: { onGetStarted: () => void }) {
                 onClick={onGetStarted}
                 className="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-all duration-200 transform hover:scale-105 shadow-lg flex items-center space-x-2"
               >
-                <span>Request for Proposals</span>
+                <span>Sign In</span>
                 <ArrowRight className="w-5 h-5" />
               </button>
               <p className="text-sm text-gray-500">No credit card required • 14-day free trial</p>
@@ -187,57 +189,6 @@ function LandingPage({ onGetStarted }: { onGetStarted: () => void }) {
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Frequently Asked Questions
-            </h2>
-            <p className="text-xl text-gray-600">
-              Everything you need to know about GrantEdge AI
-            </p>
-          </div>
-
-          <div className="space-y-8">
-            <div className="bg-white p-8 rounded-xl border border-gray-200">
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                How accurate are the grant matches?
-              </h3>
-              <p className="text-gray-600 leading-relaxed">
-                Our AI analyzes over 50 data points including your mission, programs, budget size, and geographic focus to provide 90%+ accuracy in grant matching. We continuously refine our algorithms based on successful funding outcomes, ensuring you see the most relevant opportunities first.
-              </p>
-            </div>
-
-            <div className="bg-white p-8 rounded-xl border border-gray-200">
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                Will this replace our human grant writer?
-              </h3>
-              <p className="text-gray-600 leading-relaxed">
-                GrantEdge AI enhances human expertise rather than replacing it. Think of it as your grant writer's superpower – handling research, first drafts, and formatting while your team focuses on strategy, relationships, and the unique storytelling that makes proposals compelling. Many organizations use both AI assistance and human review for optimal results.
-              </p>
-            </div>
-
-            <div className="bg-white p-8 rounded-xl border border-gray-200">
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                What types of organizations benefit most?
-              </h3>
-              <p className="text-gray-600 leading-relaxed">
-                GrantEdge AI is designed specifically for small to medium-sized health and social welfare organizations – nonprofits, community health centers, social enterprises, and advocacy groups with limited grant writing resources. If you're spending too much time searching for funding or struggling to compete with larger organizations, you're our ideal user.
-              </p>
-            </div>
-
-            <div className="bg-white p-8 rounded-xl border border-gray-200">
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                How quickly can we see results?
-              </h3>
-              <p className="text-gray-600 leading-relaxed">
-                Most organizations find relevant grant opportunities within their first week and submit their first AI-assisted proposal within 30 days. However, the real impact comes over time – users typically see a 3x improvement in win rates and 80% time savings within their first grant cycle (3-6 months).
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-r from-blue-600 to-green-600">
@@ -252,7 +203,7 @@ function LandingPage({ onGetStarted }: { onGetStarted: () => void }) {
             onClick={onGetStarted}
             className="bg-white text-blue-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 transition-all duration-200 transform hover:scale-105 shadow-lg inline-flex items-center space-x-2"
           >
-            <span>Request for Proposals</span>
+            <span>Sign In</span>
             <ArrowRight className="w-5 h-5" />
           </button>
           <p className="text-blue-100 text-sm mt-4">14-day free trial • No credit card required • Cancel anytime</p>
