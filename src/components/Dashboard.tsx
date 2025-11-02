@@ -11,7 +11,8 @@ import {
   Award,
   Clock,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
@@ -33,9 +34,24 @@ function Dashboard() {
     successRate: 0
   });
   const [loading, setLoading] = useState(true);
+  const [orgFormData, setOrgFormData] = useState({
+    name: '',
+    website: '',
+    sector: '',
+    organization_size: '',
+    mission: '',
+    area_of_interest: '',
+    country: '',
+    annual_report: '',
+    common_donors: ''
+  });
+  const [orgFormLoading, setOrgFormLoading] = useState(false);
+  const [orgFormError, setOrgFormError] = useState<string | null>(null);
+  const [orgFormSuccess, setOrgFormSuccess] = useState(false);
 
   useEffect(() => {
     fetchDashboardStats();
+    fetchOrganizationData();
   }, []);
 
   const fetchDashboardStats = async () => {
@@ -66,6 +82,95 @@ function Dashboard() {
       console.error('Error fetching dashboard stats:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchOrganizationData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('organizations')
+        .select('*')
+        .eq('user_id', user?.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+        throw error;
+      }
+
+      if (data) {
+        setOrgFormData({
+          name: data.name || '',
+          website: data.contact_email || '', // Using contact_email as website field
+          sector: data.sector || '',
+          organization_size: data.organization_size || '',
+          mission: data.mission || '',
+          area_of_interest: '', // This field doesn't exist in current schema
+          country: data.address || '', // Using address as country field
+          annual_report: '', // This field doesn't exist in current schema
+          common_donors: '' // This field doesn't exist in current schema
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching organization data:', error);
+    }
+  };
+
+  const handleOrgFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    setOrgFormData({
+      ...orgFormData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleOrgFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setOrgFormLoading(true);
+    setOrgFormError(null);
+    setOrgFormSuccess(false);
+
+    try {
+      // Check if organization already exists
+      const { data: existingOrg } = await supabase
+        .from('organizations')
+        .select('id')
+        .eq('user_id', user?.id)
+        .single();
+
+      const orgData = {
+        user_id: user?.id,
+        name: orgFormData.name,
+        sector: orgFormData.sector,
+        organization_size: orgFormData.organization_size,
+        mission: orgFormData.mission,
+        contact_email: orgFormData.website, // Storing website in contact_email field
+        address: orgFormData.country, // Storing country in address field
+        annual_budget: null // You might want to add this field later
+      };
+
+      if (existingOrg) {
+        // Update existing organization
+        const { error } = await supabase
+          .from('organizations')
+          .update(orgData)
+          .eq('user_id', user?.id);
+
+        if (error) throw error;
+      } else {
+        // Create new organization
+        const { error } = await supabase
+          .from('organizations')
+          .insert(orgData);
+
+        if (error) throw error;
+      }
+
+      setOrgFormSuccess(true);
+      setTimeout(() => setOrgFormSuccess(false), 3000);
+    } catch (error: any) {
+      console.error('Error saving organization:', error);
+      setOrgFormError(error.message || 'Failed to save organization details');
+    } finally {
+      setOrgFormLoading(false);
     }
   };
 
@@ -178,7 +283,21 @@ function Dashboard() {
 
         {/* Organization Form */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-12">
-          <form className="space-y-8">
+          {orgFormSuccess && (
+            <div className="mb-8 bg-green-50 border border-green-200 text-green-700 px-6 py-4 rounded-lg text-center">
+              <p className="font-semibold">Success!</p>
+              <p>Your organization details have been saved successfully.</p>
+            </div>
+          )}
+
+          {orgFormError && (
+            <div className="mb-8 bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg">
+              <p className="font-semibold">Error:</p>
+              <p>{orgFormError}</p>
+            </div>
+          )}
+
+          <form className="space-y-8" onSubmit={handleOrgFormSubmit}>
             {/* Row 1: Name and Website */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
@@ -187,7 +306,11 @@ function Dashboard() {
                 </label>
                 <input
                   id="orgName"
+                  name="name"
                   type="text"
+                  required
+                  value={orgFormData.name}
+                  onChange={handleOrgFormChange}
                   className="w-full px-4 py-4 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                   placeholder="Enter your organisation name"
                 />
@@ -198,7 +321,10 @@ function Dashboard() {
                 </label>
                 <input
                   id="website"
+                  name="website"
                   type="url"
+                  value={orgFormData.website}
+                  onChange={handleOrgFormChange}
                   className="w-full px-4 py-4 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                   placeholder="https://www.yourorganisation.com"
                 />
@@ -213,6 +339,10 @@ function Dashboard() {
                 </label>
                 <select
                   id="sector"
+                  name="sector"
+                  required
+                  value={orgFormData.sector}
+                  onChange={handleOrgFormChange}
                   className="w-full px-4 py-4 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                 >
                   <option value="">Select your sector</option>
@@ -223,6 +353,7 @@ function Dashboard() {
                   <option value="arts-culture">Arts & Culture</option>
                   <option value="community-development">Community Development</option>
                   <option value="research">Research</option>
+                  <option value="nonprofit">Nonprofit</option>
                   <option value="other">Other</option>
                 </select>
               </div>
@@ -232,6 +363,10 @@ function Dashboard() {
                 </label>
                 <select
                   id="orgSize"
+                  name="organization_size"
+                  required
+                  value={orgFormData.organization_size}
+                  onChange={handleOrgFormChange}
                   className="w-full px-4 py-4 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                 >
                   <option value="">Select organisation size</option>
@@ -249,7 +384,10 @@ function Dashboard() {
               </label>
               <textarea
                 id="objective"
+                name="mission"
                 rows={4}
+                value={orgFormData.mission}
+                onChange={handleOrgFormChange}
                 className="w-full px-4 py-4 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
                 placeholder="Describe your organisation's main goals and objectives..."
               />
@@ -263,7 +401,10 @@ function Dashboard() {
                 </label>
                 <input
                   id="areaOfInterest"
+                  name="area_of_interest"
                   type="text"
+                  value={orgFormData.area_of_interest}
+                  onChange={handleOrgFormChange}
                   className="w-full px-4 py-4 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                   placeholder="e.g., Mental health, Youth development"
                 />
@@ -274,7 +415,10 @@ function Dashboard() {
                 </label>
                 <input
                   id="country"
+                  name="country"
                   type="text"
+                  value={orgFormData.country}
+                  onChange={handleOrgFormChange}
                   className="w-full px-4 py-4 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                   placeholder="Enter your primary country of operation"
                 />
@@ -289,7 +433,10 @@ function Dashboard() {
                 </label>
                 <input
                   id="annualReport"
+                  name="annual_report"
                   type="url"
+                  value={orgFormData.annual_report}
+                  onChange={handleOrgFormChange}
                   className="w-full px-4 py-4 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                   placeholder="Link to your latest annual report"
                 />
@@ -300,7 +447,10 @@ function Dashboard() {
                 </label>
                 <input
                   id="commonDonors"
+                  name="common_donors"
                   type="text"
+                  value={orgFormData.common_donors}
+                  onChange={handleOrgFormChange}
                   className="w-full px-4 py-4 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                   placeholder="e.g., Gates Foundation, Local Government"
                 />
@@ -311,9 +461,17 @@ function Dashboard() {
             <div className="pt-8 text-center">
               <button
                 type="submit"
+                disabled={orgFormLoading}
                 className="bg-blue-600 text-white px-12 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-105 shadow-lg"
               >
-                Save Organisation Details
+                {orgFormLoading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin mr-2 inline" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save Organisation Details'
+                )}
               </button>
             </div>
           </form>
