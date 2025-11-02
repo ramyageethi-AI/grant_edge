@@ -113,7 +113,7 @@ function Dashboard() {
         .from('organizations')
         .select('*')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
         throw error;
@@ -152,11 +152,15 @@ function Dashboard() {
 
     try {
       // Check if organization already exists
-      const { data: existingOrg } = await supabase
+      const { data: existingOrg, error: fetchError } = await supabase
         .from('organizations')
         .select('id')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
+
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        throw fetchError;
+      }
 
       const orgData = {
         user_id: user?.id,
