@@ -50,11 +50,15 @@ function Dashboard() {
   const [orgFormSuccess, setOrgFormSuccess] = useState(false);
 
   useEffect(() => {
-    fetchDashboardStats();
-    fetchOrganizationData();
-  }, []);
+    if (user?.id) {
+      fetchDashboardStats();
+      fetchOrganizationData();
+    }
+  }, [user]);
 
   const fetchDashboardStats = async () => {
+    if (!user?.id) return;
+    
     try {
       setLoading(true);
       
@@ -64,10 +68,26 @@ function Dashboard() {
         .select('*', { count: 'exact', head: true });
 
       // Fetch user's proposals
+      const { data: organizations } = await supabase
+        .from('organizations')
+        .select('id')
+        .eq('user_id', user.id);
+
+      if (!organizations || organizations.length === 0) {
+        setStats({
+          totalRFPs: rfpsCount || 0,
+          myProposals: 0,
+          submittedProposals: 0,
+          successRate: 0
+        });
+        return;
+      }
+
+      const organizationId = organizations[0].id;
       const { data: proposals, count: proposalsCount } = await supabase
         .from('proposals')
         .select('*', { count: 'exact' })
-        .eq('user_id', user?.id);
+        .eq('organization_id', organizationId);
 
       // Count submitted proposals
       const submittedCount = proposals?.filter(p => p.status === 'submitted').length || 0;
@@ -86,6 +106,8 @@ function Dashboard() {
   };
 
   const fetchOrganizationData = async () => {
+    if (!user?.id) return;
+    
     try {
       const { data, error } = await supabase
         .from('organizations')
