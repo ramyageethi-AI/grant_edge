@@ -32,6 +32,8 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
   const [resetLoading, setResetLoading] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
   const [signupStep, setSignupStep] = useState(1);
+  const [signupSuccess, setSignupSuccess] = useState(false);
+  const [signupMessage, setSignupMessage] = useState('');
   const [step1Data, setStep1Data] = useState<SignupStep1Data>({
     email: '',
     password: '',
@@ -55,6 +57,8 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSignupSuccess(false);
+    setSignupMessage('');
 
     try {
       // Create auth user with Supabase
@@ -69,13 +73,13 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
       if (authError) throw authError;
 
       if (authData.user) {
-        // Wait for the session to be established before creating organization
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
         // Get the current session to ensure we're authenticated
         const { data: { session } } = await supabase.auth.getSession();
         
-        if (session) {
+        if (session && session.user) {
+          // User is confirmed and logged in - create organization
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
           // Create organization record using auth user's id for both id and user_id
           const { error: orgError } = await supabase
             .from('organizations')
@@ -91,6 +95,12 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
             console.error('Organization creation error:', orgError);
             throw new Error('Failed to create organization profile. Please contact support.');
           }
+          
+          // Success - user will be automatically redirected to dashboard by useAuth
+        } else {
+          // No session means email confirmation is required
+          setSignupSuccess(true);
+          setSignupMessage('Account created! Please check your email to confirm, then log in.');
         }
       }
     } catch (err: any) {
@@ -433,94 +443,113 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
               </div>
             </form>
           ) : signupStep === 1 ? (
-            <form className="space-y-6" onSubmit={handleStep1Submit}>
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                  {error}
+            signupSuccess ? (
+              <div className="space-y-6 text-center">
+                <div className="bg-green-50 border border-green-200 text-green-700 px-6 py-4 rounded-lg">
+                  <h3 className="font-semibold mb-2">Success!</h3>
+                  <p>{signupMessage}</p>
                 </div>
-              )}
-
-              <div>
-                <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Name
-                </label>
-                <input
-                  id="fullName"
-                  name="fullName"
-                  type="text"
-                  required
-                  value={step1Data.fullName}
-                  onChange={handleStep1InputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  placeholder="Enter your name"
-                />
+                <button
+                  onClick={() => {
+                    setSignupSuccess(false);
+                    setSignupMessage('');
+                    onToggleMode(); // Switch to login mode
+                  }}
+                  className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                >
+                  Go to Sign In
+                </button>
               </div>
+            ) : (
+              <form className="space-y-6" onSubmit={handleStep1Submit}>
+                {error && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                    {error}
+                  </div>
+                )}
 
-              <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Email
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={step1Data.email}
-                  onChange={handleStep1InputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  placeholder="Enter your email address"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Password
-                </label>
-                <div className="relative">
+                <div>
+                  <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700 mb-2">
+                    Name
+                  </label>
                   <input
-                    id="password"
-                    name="password"
-                    type={showPassword ? 'text' : 'password'}
-                    autoComplete="new-password"
+                    id="fullName"
+                    name="fullName"
+                    type="text"
                     required
-                    value={step1Data.password}
+                    value={step1Data.fullName}
                     onChange={handleStep1InputChange}
-                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Create a secure password"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    placeholder="Enter your name"
                   />
+                </div>
+
+                <div>
+                  <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+                    Email
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={step1Data.email}
+                    onChange={handleStep1InputChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    placeholder="Enter your email address"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="password"
+                      name="password"
+                      type={showPassword ? 'text' : 'password'}
+                      autoComplete="new-password"
+                      required
+                      value={step1Data.password}
+                      onChange={handleStep1InputChange}
+                      className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      placeholder="Create a secure password"
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      ) : (
+                        <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+
+                <div className="pt-4">
                   <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                    onClick={() => setShowPassword(!showPassword)}
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-blue-600 text-white py-4 px-6 rounded-lg text-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-[1.02] shadow-lg"
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                        Creating Account...
+                      </>
                     ) : (
-                      <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      'Signup'
                     )}
                   </button>
                 </div>
-              </div>
-
-
-              <div className="pt-4">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-blue-600 text-white py-4 px-6 rounded-lg text-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-[1.02] shadow-lg"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                      Creating Account...
-                    </>
-                  ) : (
-                    'Signup'
-                  )}
-                </button>
-              </div>
-            </form>
+              </form>
+            )
           ) : null}
           </>
           )}
@@ -536,6 +565,8 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
                     setError(null);
                     setFormData({ email: '', password: '', fullName: '', organizationName: '', role: '' });
                     setStep1Data({ email: '', password: '', fullName: '', role: '' });
+                    setSignupSuccess(false);
+                    setSignupMessage('');
                   }}
                   className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
                 >
