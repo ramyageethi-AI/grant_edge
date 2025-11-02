@@ -61,7 +61,7 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
     setSignupMessage('');
 
     try {
-      // Create auth user with Supabase
+      // Create auth user with Supabase - this connects to auth.users table
       const { data: authData, error: authError } = await signUp(
         step1Data.email, 
         step1Data.password, 
@@ -73,14 +73,14 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
       if (authError) throw authError;
 
       if (authData.user) {
-        // Get the current session to ensure we're authenticated
+        // Check if user is immediately confirmed (session exists)
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session && session.user) {
-          // User is confirmed and logged in - create organization
+          // User is confirmed and logged in - create organization record
           await new Promise(resolve => setTimeout(resolve, 1000));
           
-          // Create organization record using auth user's id for both id and user_id
+          // Create organization record linked to auth.users via user_id
           const { error: orgError } = await supabase
             .from('organizations')
             .insert({
@@ -96,9 +96,9 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
             throw new Error('Failed to create organization profile. Please contact support.');
           }
           
-          // Success - user will be automatically redirected to dashboard by useAuth
+          // Success - user authenticated and organization created
         } else {
-          // No session means email confirmation is required
+          // No session means email confirmation required before login
           setSignupSuccess(true);
           setSignupMessage('Account created! Please check your email to confirm, then log in.');
         }
@@ -178,28 +178,24 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
     setLoading(true);
     setError(null);
 
-    console.log('Attempting login with email:', formData.email);
     try {
+      // Sign in with Supabase auth - this checks auth.users table
       const { data, error } = await signIn(formData.email, formData.password);
       if (error) throw error;
       
-      console.log('Login successful:', data);
+      // Login successful - useAuth hook will handle session state
     } catch (err: any) {
-      console.error('Login error details:', err);
-      
       // Handle specific Supabase errors
       if (err.message?.includes('over_email_send_rate_limit')) {
         setError('Too many requests. Please wait 40 seconds before trying again for security purposes.');
       } else if (err.message?.includes('rate_limit')) {
         setError('Rate limit exceeded. Please wait a moment before trying again.');
       } else if (err.message?.includes('invalid_credentials') || err.message?.includes('Invalid login credentials')) {
-        setError('No account found with these credentials. Please check your email and password, or create a new account if you haven\'t signed up yet.');
+        setError('Invalid email or password. Please check your credentials and try again.');
       } else if (err.message?.includes('Email not confirmed')) {
         setError('Please check your email and click the confirmation link before signing in.');
       } else if (err.message?.includes('User not found')) {
         setError('No account found with this email address. Please sign up first.');
-      } else if (err.message?.includes('signup_disabled')) {
-        setError('Account creation is currently disabled. Please contact support.');
       } else {
         setError(err.message || 'An unexpected error occurred. Please try again.');
       }
