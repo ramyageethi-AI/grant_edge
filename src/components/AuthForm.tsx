@@ -510,8 +510,7 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
                 </button>
               </div>
             </form>
-          ) : null
-          )}
+          ) : null}
           </>
           )}
 
