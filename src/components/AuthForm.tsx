@@ -57,7 +57,7 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
     setError(null);
 
     try {
-      // Create auth user directly without going to step 2
+      // Create auth user with Supabase
       const { data: authData, error: authError } = await signUp(
         step1Data.email, 
         step1Data.password, 
@@ -69,31 +69,48 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
       if (authError) throw authError;
 
       if (authData.user) {
-        // Wait a moment for the session to be established
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Create user profile in users table
+        const { error: userError } = await supabase
+          .from('users')
+          .insert({
+            id: authData.user.id,
+            full_name: step1Data.fullName,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+
+        if (userError) {
+          console.error('User profile creation error:', userError);
+          // Don't throw error here as auth user was created successfully
+        }
         
-        // Create a basic organization record
+        // Create a basic organization record for the user
         const { error: orgError } = await supabase
           .from('organizations')
           .insert({
             user_id: authData.user.id,
             name: `${step1Data.fullName}'s Organization`,
-            sector: 'other',
-            organization_size: 'small'
+            sector: 'nonprofit',
+            organization_size: 'small',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           });
 
         if (orgError) {
           console.error('Organization creation error:', orgError);
-          throw new Error('Failed to create organization profile. Please contact support.');
+          // Don't throw error here as auth user was created successfully
         }
       }
     } catch (err: any) {
+      console.error('Signup error:', err);
       if (err.message?.includes('over_email_send_rate_limit')) {
         setError('Too many requests. Please wait 40 seconds before trying again for security purposes.');
       } else if (err.message?.includes('rate_limit')) {
         setError('Rate limit exceeded. Please wait a moment before trying again.');
       } else if (err.message?.includes('signup_disabled')) {
         setError('Account creation is currently disabled. Please contact support.');
+      } else if (err.message?.includes('User already registered')) {
+        setError('An account with this email already exists. Please sign in instead.');
       } else {
         setError(err.message || 'An unexpected error occurred. Please try again.');
       }
@@ -161,8 +178,10 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
 
     console.log('Attempting login with email:', formData.email);
     try {
-      const { error } = await signIn(formData.email, formData.password);
+      const { data, error } = await signIn(formData.email, formData.password);
       if (error) throw error;
+      
+      console.log('Login successful:', data);
     } catch (err: any) {
       console.error('Login error details:', err);
       
