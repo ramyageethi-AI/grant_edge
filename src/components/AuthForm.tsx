@@ -69,21 +69,6 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
       if (authError) throw authError;
 
       if (authData.user) {
-        // Create user profile in users table
-        const { error: userError } = await supabase
-          .from('users')
-          .insert({
-            id: authData.user.id,
-            full_name: step1Data.fullName,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
-
-        if (userError) {
-          console.error('User profile creation error:', userError);
-          // Don't throw error here as auth user was created successfully
-        }
-        
         // Wait for the session to be established before creating organization
         await new Promise(resolve => setTimeout(resolve, 1000));
         
@@ -91,19 +76,20 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session) {
-          // Create a basic organization record for the user
+          // Create organization record using auth user's id for both id and user_id
           const { error: orgError } = await supabase
             .from('organizations')
             .insert({
+              id: authData.user.id,
               user_id: authData.user.id,
-              name: `${step1Data.fullName}'s Organization`,
+              name: step1Data.fullName,
               sector: 'nonprofit',
               organization_size: 'small'
             });
 
           if (orgError) {
             console.error('Organization creation error:', orgError);
-            // Don't throw error here as auth user was created successfully
+            throw new Error('Failed to create organization profile. Please contact support.');
           }
         }
       }
