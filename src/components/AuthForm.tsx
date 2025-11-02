@@ -422,7 +422,6 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
               </div>
             </form>
           ) : signupStep === 1 ? (
-          ) : (
             <form className="space-y-6" onSubmit={handleStep1Submit}>
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
@@ -497,12 +496,21 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
               <div className="pt-4">
                 <button
                   type="submit"
+                  disabled={loading}
                   className="w-full bg-blue-600 text-white py-4 px-6 rounded-lg text-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-[1.02] shadow-lg"
                 >
-                  Signup
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                      Creating Account...
+                    </>
+                  ) : (
+                    'Signup'
+                  )}
                 </button>
               </div>
             </form>
+          ) : null
           )}
           </>
           )}
