@@ -210,63 +210,6 @@ function LandingPage({ onGetStarted }: { onGetStarted: () => void }) {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <Target className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-xl font-bold">GrantEdge AI</span>
-              </div>
-              <p className="text-gray-400 text-sm leading-relaxed">
-                Empowering SMBs to win more grants through AI-powered intelligence and streamlined proposal management.
-              </p>
-            </div>
-
-            <div>
-              <h4 className="font-semibold mb-4">Product</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
-                <li><a href="#how-it-works" className="hover:text-white transition-colors">How It Works</a></li>
-                <li><a href="#pricing" className="hover:text-white transition-colors">Pricing</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">API</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-semibold mb-4">Company</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">About</a></li>
-                <li><a href="#contact" className="hover:text-white transition-colors">Contact</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-semibold mb-4">Legal</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Security</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">GDPR</a></li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm">
-              © 2024 GrantEdge AI. All rights reserved.
-            </p>
-            <p className="text-gray-400 text-sm mt-4 md:mt-0">
-              Empowering SMBs to win more grants
-            </p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
