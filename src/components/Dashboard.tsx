@@ -168,9 +168,10 @@ function Dashboard() {
         sector: orgFormData.sector,
         organization_size: orgFormData.organization_size,
         mission: orgFormData.mission,
-        contact_email: orgFormData.website, // Storing website in contact_email field
-        address: orgFormData.country, // Storing country in address field
-        annual_budget: null // You might want to add this field later
+        contact_email: orgFormData.website,
+        contact_phone: '', // You can add this field to the form later
+        address: orgFormData.country,
+        annual_budget: null
       };
 
       if (existingOrg) {
@@ -191,10 +192,18 @@ function Dashboard() {
       }
 
       setOrgFormSuccess(true);
+      // Refresh dashboard stats after successful save
+      await fetchDashboardStats();
       setTimeout(() => setOrgFormSuccess(false), 3000);
     } catch (error: any) {
       console.error('Error saving organization:', error);
-      setOrgFormError(error.message || 'Failed to save organization details');
+      if (error.code === '23505') {
+        setOrgFormError('An organization with this information already exists.');
+      } else if (error.code === '23503') {
+        setOrgFormError('Invalid user session. Please try logging out and back in.');
+      } else {
+        setOrgFormError(error.message || 'Failed to save organization details. Please try again.');
+      }
     } finally {
       setOrgFormLoading(false);
     }
