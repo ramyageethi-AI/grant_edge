@@ -84,7 +84,6 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
           const { error: orgError } = await supabase
             .from('organizations')
             .insert({
-              id: authData.user.id,
               user_id: authData.user.id,
               name: step1Data.fullName,
               sector: 'nonprofit',

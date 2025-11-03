@@ -146,6 +146,13 @@ function Dashboard() {
 
   const handleOrgFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Ensure user is properly authenticated
+    if (!user?.id) {
+      setOrgFormError('User session not found. Please log out and log back in.');
+      return;
+    }
+    
     setOrgFormLoading(true);
     setOrgFormError(null);
     setOrgFormSuccess(false);
