@@ -46,6 +46,36 @@ export function useAuth() {
       password,
     });
     
+    // If sign in is successful but user record doesn't exist in custom users table, create it
+    if (data.user && !error) {
+      const { data: existingUser, error: fetchError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', data.user.id)
+        .maybeSingle();
+      
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('Error checking user existence:', fetchError);
+      }
+      
+      // If user doesn't exist in custom users table, create it
+      if (!existingUser) {
+        const { error: userInsertError } = await supabase
+          .from('users')
+          .insert({
+            id: data.user.id,
+            full_name: data.user.user_metadata?.full_name || '',
+            role: data.user.user_metadata?.role || '',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+        
+        if (userInsertError) {
+          console.error('Error creating user record:', userInsertError);
+        }
+      }
+    }
+    
     return { data, error };
   };
 

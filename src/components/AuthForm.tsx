@@ -80,7 +80,23 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
           // User is confirmed and logged in - create organization record
           await new Promise(resolve => setTimeout(resolve, 1000));
           
-          // Create organization record linked to auth.users via user_id
+          // Step 1: Create user record in custom users table
+          const { error: userError } = await supabase
+            .from('users')
+            .insert({
+              id: authData.user.id,
+              full_name: step1Data.fullName,
+              role: step1Data.role,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+
+          if (userError) {
+            console.error('User creation error:', userError);
+            throw new Error('Failed to create user profile. Please contact support.');
+          }
+          
+          // Step 2: Create organization record linked to users table via user_id
           const { error: orgError } = await supabase
             .from('organizations')
             .insert({
