@@ -67,6 +67,7 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
         step1Data.password, 
         {
           full_name: step1Data.fullName,
+          role: step1Data.role || 'user',
         }
       );
 
@@ -86,7 +87,7 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
             .insert({
               id: authData.user.id,
               full_name: step1Data.fullName,
-              role: step1Data.role,
+              role: step1Data.role || 'user',
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString()
             });

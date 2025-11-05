@@ -64,8 +64,8 @@ export function useAuth() {
           .from('users')
           .insert({
             id: data.user.id,
-            full_name: data.user.user_metadata?.full_name || '',
-            role: data.user.user_metadata?.role || '',
+            full_name: data.user.user_metadata?.full_name || data.user.email || '',
+            role: data.user.user_metadata?.role || 'user',
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           });
