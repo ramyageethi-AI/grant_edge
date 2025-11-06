@@ -59,13 +59,13 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
     role: ''
   });
 
-  const handleStep1Submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setSignupSuccess(false);
-    setSignupMessage('');
-
+  const handleStep1Submit = (e: React.FormEvent) => {
+  e.preventDefault();
+  setError(null);
+  setSignupSuccess(false);
+  setSignupMessage('');
+  setSignupStep(2);
+};
     try {
       // Create auth user with Supabase - this connects to auth.users table
       const { data: authData, error: authError } = await signUp(
