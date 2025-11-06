@@ -67,57 +67,6 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
   setSignupStep(2);
 };
 
-    try {
-      // Create auth user with Supabase - this connects to auth.users table
-      const { data: authData, error: authError } = await signUp(
-        step1Data.email, 
-        step1Data.password, 
-        {
-          full_name: step1Data.fullName,
-          role: step1Data.role || 'user',
-        }
-      );
-
-      if (authError) throw authError;
-
-      if (authData.user) {
-        // Check if user is immediately confirmed (session exists)
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session && session.user) {
-          // User is confirmed and logged in - create organization record
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          
-          if (orgError) {
-            console.error('Organization creation error:', orgError);
-            throw new Error('Failed to create organization profile. Please contact support.');
-          }
-          
-          // Success - user authenticated and organization created
-        } else {
-          // No session means email confirmation required before login
-          setSignupSuccess(true);
-          setSignupMessage('Account created! Please check your email to confirm, then log in.');
-        }
-      }
-    } catch (err: any) {
-      console.error('Signup error:', err);
-      if (err.message?.includes('over_email_send_rate_limit')) {
-        setError('Too many requests. Please wait 40 seconds before trying again for security purposes.');
-      } else if (err.message?.includes('rate_limit')) {
-        setError('Rate limit exceeded. Please wait a moment before trying again.');
-      } else if (err.message?.includes('signup_disabled')) {
-        setError('Account creation is currently disabled. Please contact support.');
-      } else if (err.message?.includes('User already registered')) {
-        setError('An account with this email already exists. Please sign in instead.');
-      } else {
-        setError(err.message || 'An unexpected error occurred. Please try again.');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleStep2Submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
