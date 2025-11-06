@@ -42,8 +42,13 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
   });
   const [step2Data, setStep2Data] = useState<SignupStep2Data>({
     organizationName: '',
+    website: '',
     sector: '',
-    organizationSize: ''
+    goal: '',
+    areaOfInterest: '',
+    country: '',
+    annualReport: '',
+    commonDonors: ''
   });
   const [formData, setFormData] = useState({
     email: '',
@@ -81,32 +86,6 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
           // User is confirmed and logged in - create organization record
           await new Promise(resolve => setTimeout(resolve, 1000));
           
-          // Step 1: Create user record in custom users table
-          const { error: userError } = await supabase
-            .from('users')
-            .insert({
-              id: authData.user.id,
-              full_name: step1Data.fullName,
-              role: step1Data.role || 'user',
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            });
-
-          if (userError) {
-            console.error('User creation error:', userError);
-            throw new Error('Failed to create user profile. Please contact support.');
-          }
-          
-          // Step 2: Create organization record linked to users table via user_id
-          const { error: orgError } = await supabase
-            .from('organizations')
-            .insert({
-              user_id: authData.user.id,
-              name: step1Data.fullName,
-              sector: 'nonprofit',
-              organization_size: 'small'
-            });
-
           if (orgError) {
             console.error('Organization creation error:', orgError);
             throw new Error('Failed to create organization profile. Please contact support.');
@@ -165,8 +144,13 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
           .insert({
             user_id: authData.user.id,
             name: step2Data.organizationName,
+            website: step2Data.website,
             sector: step2Data.sector,
-            organization_size: step2Data.organizationSize
+            goal: step2Data.goal,
+            area_of_interest: step2Data.areaOfInterest,
+            country: step2Data.country,
+            annual_report: step2Data.annualReport,
+            common_donors: step2Data.commonDonors
           });
 
         if (orgError) {
