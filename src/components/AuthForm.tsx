@@ -140,6 +140,8 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         // Step 2: Create organization record with authenticated session
+        console.log("Step2 data being inserted:", step2Data);
+
         const { error: orgError } = await supabase
           .from('organizations')
           .insert({
