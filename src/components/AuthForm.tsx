@@ -233,83 +233,82 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
         </div>
 
         {/* Auth Form */}
-        <div className="bg-white py-12 px-8 shadow-lg rounded-xl border border-gray-200">
-          {showForgotPassword ? (
-            <div className="space-y-6">
-              <div className="text-center">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Reset Password</h2>
-                <p className="text-gray-600">Enter your email to receive a password reset link</p>
-              </div>
+        {showForgotPassword ? (
+          <div>
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Reset Password</h2>
+              <p className="text-gray-600">Enter your email to receive a password reset link</p>
+            </div>
 
-              {resetSuccess ? (
-                <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-center">
-                  <p className="font-medium">Password reset email sent!</p>
-                  <p className="text-sm mt-1">Check your inbox for further instructions.</p>
+            {resetSuccess ? (
+              <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-center">
+                <p className="font-medium">Password reset email sent!</p>
+                <p className="text-sm mt-1">Check your inbox for further instructions.</p>
+                <button
+                  onClick={() => {
+                    setShowForgotPassword(false);
+                    setResetSuccess(false);
+                    setResetEmail('');
+                  }}
+                  className="text-green-600 hover:text-green-700 font-medium mt-2"
+                >
+                  Back to Sign In
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handlePasswordReset} className="space-y-6">
+                {error && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                    {error}
+                  </div>
+                )}
+
+                <div>
+                  <label htmlFor="resetEmail" className="block text-sm font-semibold text-gray-700 mb-2">
+                    Email Address
+                  </label>
+                  <input
+                    id="resetEmail"
+                    type="email"
+                    required
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    placeholder="Enter your email address"
+                  />
+                </div>
+
+                <div className="flex space-x-4">
                   <button
+                    type="button"
                     onClick={() => {
                       setShowForgotPassword(false);
-                      setResetSuccess(false);
+                      setError(null);
                       setResetEmail('');
                     }}
-                    className="text-green-600 hover:text-green-700 font-medium mt-2"
+                    className="flex-1 bg-gray-200 text-gray-800 py-3 px-6 rounded-lg font-semibold hover:bg-gray-300 transition-all duration-200"
                   >
-                    Back to Sign In
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={resetLoading}
+                    className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    {resetLoading ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                        Sending...
+                      </>
+                    ) : (
+                      'Send Reset Link'
+                    )}
                   </button>
                 </div>
-              ) : (
-                <form onSubmit={handlePasswordReset} className="space-y-6">
-                  {error && (
-                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                      {error}
-                    </div>
-                  )}
-
-                  <div>
-                    <label htmlFor="resetEmail" className="block text-sm font-semibold text-gray-700 mb-2">
-                      Email Address
-                    </label>
-                    <input
-                      id="resetEmail"
-                      type="email"
-                      required
-                      value={resetEmail}
-                      onChange={(e) => setResetEmail(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                      placeholder="Enter your email address"
-                    />
-                  </div>
-
-                  <div className="flex space-x-4">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowForgotPassword(false);
-                        setError(null);
-                        setResetEmail('');
-                      }}
-                      className="flex-1 bg-gray-200 text-gray-800 py-3 px-6 rounded-lg font-semibold hover:bg-gray-300 transition-all duration-200"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={resetLoading}
-                      className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                    >
-                      {resetLoading ? (
-                        <>
-                          <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                          Sending...
-                        </>
-                      ) : (
-                        'Send Reset Link'
-                      )}
-                    </button>
-                  </div>
-                </form>
-              )}
-            </div>
-          ) : (
+              </form>
+            )}
+          </div>
+        ) : (
           <>
           {mode === 'login' ? (
             <form className="space-y-6" onSubmit={handleLoginSubmit}>
@@ -503,30 +502,27 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
             )
           ) : null}
           </>
-          )}
+        )}
 
-          {!showForgotPassword && (
-            <div className="mt-8 text-center">
-              <div className="text-gray-600 text-sm">
-                {mode === 'login' ? "Don't have an account? " : "Already have an account? "}
-                <button
-                  onClick={() => {
-                    onToggleMode();
-                    setSignupStep(1);
-                    setError(null);
-                    setFormData({ email: '', password: '', fullName: '', organizationName: '', role: '' });
-                    setStep1Data({ email: '', password: '', fullName: '', role: '' });
-                    setSignupSuccess(false);
-                    setSignupMessage('');
-                  }}
-                  className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
-                >
-                  {mode === 'login' ? 'Sign up for free' : 'Sign in here'}
-                </button>
-              </div>
+        {!showForgotPassword && (
+          <div className="mt-8 text-center">
+            <div className="text-gray-600 text-sm">
+              {mode === 'login' ? "Don't have an account? " : "Already have an account? "}
+              <button
+                onClick={() => {
+                  onToggleMode();
+                  setError(null);
+                  setSignupStep(1);
+                  setSignupSuccess(false);
+                  setSignupMessage('');
+                }}
+                className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
+              >
+                {mode === 'login' ? 'Sign up' : 'Sign in'}
+              </button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
