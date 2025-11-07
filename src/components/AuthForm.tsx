@@ -50,7 +50,6 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
   const [step2Data, setStep2Data] = useState<SignupStep2Data>({
     organizationName: '',
     website: '',
-    website: '',
     sector: '',
     organizationSize: '',
     mission: '',
@@ -179,7 +178,6 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
     });
   };
 
-  const handleStep2InputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
   const handleStep2InputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setStep2Data({
       ...step2Data,
