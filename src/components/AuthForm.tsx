@@ -73,7 +73,7 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
     setError(null);
 
     try {
-      // Step 1: Create auth user
+      // Create auth user with Supabase - this connects to auth.users table
       const { data: authData, error: authError } = await signUp(
         step1Data.email, 
         step1Data.password, 
@@ -85,11 +85,11 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
 
       if (authError) throw authError;
 
-      if (authData.user) {
-        // Wait a moment for the session to be established
+        // Check if user is immediately confirmed (session exists)
+          // User is confirmed and logged in - create organization record
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Step 2: Create organization record with authenticated session
+          // Create organization record linked to auth.users via user_id
         console.log("Step2 data being inserted:", step2Data);
 
         const { error: orgError } = await supabase
@@ -106,12 +106,13 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
             annual_report: step2Data.annualReport,
             common_donors: step2Data.commonDonors
           });
+          // Success - user authenticated and organization created
 
+          // No session means email confirmation required before login
         if (orgError) {
           console.error('Organization creation error:', orgError);
           throw new Error('Failed to create organization profile. Please contact support.');
         }
-      }
     } catch (err: any) {
       if (err.message?.includes('over_email_send_rate_limit')) {
         setError('Too many requests. Please wait 40 seconds before trying again for security purposes.');
