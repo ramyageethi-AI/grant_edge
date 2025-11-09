@@ -348,7 +348,7 @@ function Dashboard() {
               <h3 className="text-lg font-semibold text-gray-900 mb-6">Required Information</h3>
               
               {/* Row 1: Organization Name and Website */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
               <div>
                 <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-3">
                   Organization Name *
@@ -382,7 +382,7 @@ function Dashboard() {
             </div>
 
               {/* Row 2: Sector and Organization Size */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
               <div>
                 <label htmlFor="sector" className="block text-sm font-semibold text-gray-700 mb-3">
                   Sector *
@@ -419,11 +419,11 @@ function Dashboard() {
             </div>
 
             {/* Optional Fields */}
-            <div>
+            <div className="space-y-8">
               <h3 className="text-lg font-semibold text-gray-900 mb-6">Optional Information</h3>
               
               {/* Goal/Objective */}
-            <div>
+            <div className="mb-8">
               <label htmlFor="goal" className="block text-sm font-semibold text-gray-700 mb-3">
                 Goal/Objective
                 <span className="text-gray-500 text-sm font-normal ml-2">(200 words max)</span>
@@ -444,7 +444,7 @@ function Dashboard() {
             </div>
 
               {/* Area of Interest */}
-              <div>
+              <div className="mb-8">
                 <label htmlFor="area_of_interest" className="block text-sm font-semibold text-gray-700 mb-3">
                   Area of Interest
                 </label>
@@ -460,7 +460,7 @@ function Dashboard() {
               </div>
 
               {/* Country and Annual Report */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
               <div>
                 <label htmlFor="country" className="block text-sm font-semibold text-gray-700 mb-3">
                   Country of Work
@@ -492,7 +492,7 @@ function Dashboard() {
             </div>
 
               {/* Common Donors */}
-              <div>
+              <div className="mb-8">
                 <label htmlFor="common_donors" className="block text-sm font-semibold text-gray-700 mb-3">
                   Common donors/Funders
                   <span className="text-gray-500 text-sm font-normal ml-2">(comma-separated)</span>
