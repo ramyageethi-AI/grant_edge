@@ -37,6 +37,26 @@ export function useAuth() {
       },
     });
     
+    // If auth signup is successful, create corresponding record in public.users table
+    if (data.user && !error) {
+      const { error: userInsertError } = await supabase
+        .from('users')
+        .insert({
+          id: data.user.id,
+          full_name: userData.full_name || userData.name || '',
+          email: data.user.email,
+          role: userData.role || 'user',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+      
+      if (userInsertError) {
+        console.error('Error creating user record:', userInsertError);
+        // Return the user insert error instead of the auth error
+        return { data, error: userInsertError };
+      }
+    }
+    
     return { data, error };
   };
 
@@ -81,6 +101,14 @@ export function useAuth() {
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
+    
+    // Always clear local state, even if server-side logout fails
+    if (error) {
+      console.warn('Server-side logout failed, clearing local state:', error);
+      setUser(null);
+      setSession(null);
+    }
+    
     return { error };
   };
 
