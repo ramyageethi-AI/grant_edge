@@ -40,7 +40,7 @@ function Dashboard() {
     sector: '',
     organization_size: '',
     goal: '',
-    area_of_interest: [] as string[],
+    area_of_interest: '',
     country: '',
     annual_report: '',
     common_donors: ''
@@ -126,7 +126,7 @@ function Dashboard() {
           sector: data.sector || '',
           organization_size: data.organization_size || '',
           goal: data.goal || '',
-          area_of_interest: data.area_of_interest ? data.area_of_interest.split(',').map(item => item.trim()) : [],
+          area_of_interest: data.area_of_interest || '',
           country: data.country || '',
           annual_report: data.annual_report || '',
           common_donors: data.common_donors || ''
@@ -138,29 +138,12 @@ function Dashboard() {
   };
 
   const handleOrgFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target;
+    const { name, value } = e.target;
     
-    if (type === 'checkbox') {
-      const checkbox = e.target as HTMLInputElement;
-      const currentValues = orgFormData.area_of_interest;
-      
-      if (checkbox.checked) {
-        setOrgFormData({
-          ...orgFormData,
-          area_of_interest: [...currentValues, value]
-        });
-      } else {
-        setOrgFormData({
-          ...orgFormData,
-          area_of_interest: currentValues.filter(item => item !== value)
-        });
-      }
-    } else {
-      setOrgFormData({
-        ...orgFormData,
-        [name]: value
-      });
-    }
+    setOrgFormData({
+      ...orgFormData,
+      [name]: value
+    });
   };
 
   const handleOrgFormSubmit = async (e: React.FormEvent) => {
@@ -195,7 +178,7 @@ function Dashboard() {
         sector: orgFormData.sector,
         organization_size: orgFormData.organization_size,
         goal: orgFormData.goal,
-        area_of_interest: orgFormData.area_of_interest.join(', '),
+        area_of_interest: orgFormData.area_of_interest,
         country: orgFormData.country,
         annual_report: orgFormData.annual_report,
         common_donors: orgFormData.common_donors
@@ -462,24 +445,18 @@ function Dashboard() {
 
               {/* Area of Interest */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                <label htmlFor="area_of_interest" className="block text-sm font-semibold text-gray-700 mb-3">
                   Area of Interest
                 </label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {['Healthcare', 'Mental Health', 'Youth Development', 'Homelessness', 'Disability Services', 'Community Development'].map((area) => (
-                    <label key={area} className="flex items-center space-x-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        name="area_of_interest"
-                        value={area}
-                        checked={orgFormData.area_of_interest.includes(area)}
-                        onChange={handleOrgFormChange}
-                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-gray-700">{area}</span>
-                    </label>
-                  ))}
-                </div>
+                <input
+                  id="area_of_interest"
+                  name="area_of_interest"
+                  type="text"
+                  value={orgFormData.area_of_interest}
+                  onChange={handleOrgFormChange}
+                  className="w-full px-4 py-4 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  placeholder="e.g., Healthcare, Mental Health, Youth Development"
+                />
               </div>
 
               {/* Country and Annual Report */}
@@ -499,11 +476,11 @@ function Dashboard() {
                 />
               </div>
               <div>
-                <label htmlFor="annualReport" className="block text-sm font-semibold text-gray-700 mb-3">
+                <label htmlFor="annual_report" className="block text-sm font-semibold text-gray-700 mb-3">
                   Annual Report URL
                 </label>
                 <input
-                  id="annualReport"
+                  id="annual_report"
                   name="annual_report"
                   type="url"
                   value={orgFormData.annual_report}
@@ -516,12 +493,12 @@ function Dashboard() {
 
               {/* Common Donors */}
               <div>
-                <label htmlFor="commonDonors" className="block text-sm font-semibold text-gray-700 mb-3">
+                <label htmlFor="common_donors" className="block text-sm font-semibold text-gray-700 mb-3">
                   Common donors/Funders
                   <span className="text-gray-500 text-sm font-normal ml-2">(comma-separated)</span>
                 </label>
                 <textarea
-                  id="commonDonors"
+                  id="common_donors"
                   name="common_donors"
                   rows={3}
                   value={orgFormData.common_donors}
