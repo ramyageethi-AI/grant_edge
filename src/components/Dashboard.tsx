@@ -39,8 +39,8 @@ function Dashboard() {
     website: '',
     sector: '',
     organization_size: '',
-    mission: '',
-    area_of_interest: '',
+    goal: '',
+    area_of_interest: [] as string[],
     country: '',
     annual_report: '',
     common_donors: ''
@@ -122,14 +122,14 @@ function Dashboard() {
       if (data) {
         setOrgFormData({
           name: data.name || '',
-          website: data.contact_email || '', // Using contact_email as website field
+          website: data.website || '',
           sector: data.sector || '',
           organization_size: data.organization_size || '',
-          mission: data.mission || '',
-          area_of_interest: '', // This field doesn't exist in current schema
-          country: data.address || '', // Using address as country field
-          annual_report: '', // This field doesn't exist in current schema
-          common_donors: '' // This field doesn't exist in current schema
+          goal: data.goal || '',
+          area_of_interest: data.area_of_interest ? data.area_of_interest.split(',').map(item => item.trim()) : [],
+          country: data.country || '',
+          annual_report: data.annual_report || '',
+          common_donors: data.common_donors || ''
         });
       }
     } catch (error) {
@@ -138,10 +138,29 @@ function Dashboard() {
   };
 
   const handleOrgFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setOrgFormData({
-      ...orgFormData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value, type } = e.target;
+    
+    if (type === 'checkbox') {
+      const checkbox = e.target as HTMLInputElement;
+      const currentValues = orgFormData.area_of_interest;
+      
+      if (checkbox.checked) {
+        setOrgFormData({
+          ...orgFormData,
+          area_of_interest: [...currentValues, value]
+        });
+      } else {
+        setOrgFormData({
+          ...orgFormData,
+          area_of_interest: currentValues.filter(item => item !== value)
+        });
+      }
+    } else {
+      setOrgFormData({
+        ...orgFormData,
+        [name]: value
+      });
+    }
   };
 
   const handleOrgFormSubmit = async (e: React.FormEvent) => {
@@ -172,13 +191,14 @@ function Dashboard() {
       const orgData = {
         user_id: user?.id,
         name: orgFormData.name,
+        website: orgFormData.website,
         sector: orgFormData.sector,
         organization_size: orgFormData.organization_size,
-        mission: orgFormData.mission,
-        contact_email: orgFormData.website,
-        contact_phone: '', // You can add this field to the form later
-        address: orgFormData.country,
-        annual_budget: null
+        goal: orgFormData.goal,
+        area_of_interest: orgFormData.area_of_interest.join(', '),
+        country: orgFormData.country,
+        annual_report: orgFormData.annual_report,
+        common_donors: orgFormData.common_donors
       };
 
       if (existingOrg) {
@@ -319,8 +339,8 @@ function Dashboard() {
       <div className="max-w-4xl mx-auto">
         {/* Header Section */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Tell us about your organisation</h1>
-          <p className="text-xl text-gray-600">Help us personalize your grant discovery experience</p>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Tell us about your organization</h1>
+          <p className="text-xl text-gray-600">Complete your organization profile to get started</p>
         </div>
 
         {/* Organization Form */}
@@ -340,117 +360,130 @@ function Dashboard() {
           )}
 
           <form className="space-y-8" onSubmit={handleOrgFormSubmit}>
-            {/* Row 1: Name and Website */}
+            {/* Required Fields */}
+            <div className="border-b border-gray-200 pb-8">
+              <h3 className="text-lg font-semibold text-gray-900 mb-6">Required Information</h3>
+              
+              {/* Row 1: Organization Name and Website */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
-                <label htmlFor="orgName" className="block text-sm font-semibold text-gray-700 mb-3">
-                  Name of the organisation
+                <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-3">
+                  Organization Name *
                 </label>
                 <input
-                  id="orgName"
+                  id="name"
                   name="name"
                   type="text"
                   required
                   value={orgFormData.name}
                   onChange={handleOrgFormChange}
                   className="w-full px-4 py-4 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  placeholder="Enter your organisation name"
+                  placeholder="Enter your organization name"
                 />
               </div>
               <div>
                 <label htmlFor="website" className="block text-sm font-semibold text-gray-700 mb-3">
-                  Website
+                  Website *
                 </label>
                 <input
                   id="website"
                   name="website"
                   type="url"
+                  required
                   value={orgFormData.website}
                   onChange={handleOrgFormChange}
                   className="w-full px-4 py-4 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  placeholder="https://www.yourorganisation.com"
+                  placeholder="https://www.yourorganization.com"
                 />
               </div>
             </div>
 
-            {/* Row 2: Sector and Organisation Size */}
+              {/* Row 2: Sector and Organization Size */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
                 <label htmlFor="sector" className="block text-sm font-semibold text-gray-700 mb-3">
-                  Sector
+                  Sector *
                 </label>
-                <select
+                <input
                   id="sector"
                   name="sector"
+                  type="text"
                   required
                   value={orgFormData.sector}
                   onChange={handleOrgFormChange}
                   className="w-full px-4 py-4 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                >
-                  <option value="">Select your sector</option>
-                  <option value="healthcare">Healthcare</option>
-                  <option value="education">Education</option>
-                  <option value="social-services">Social Services</option>
-                  <option value="environment">Environment</option>
-                  <option value="arts-culture">Arts & Culture</option>
-                  <option value="community-development">Community Development</option>
-                  <option value="research">Research</option>
-                  <option value="nonprofit">Nonprofit</option>
-                  <option value="other">Other</option>
-                </select>
+                  placeholder="e.g., Healthcare, Education, Social Services"
+                />
               </div>
               <div>
-                <label htmlFor="orgSize" className="block text-sm font-semibold text-gray-700 mb-3">
-                  Organisation size
+                <label htmlFor="organization_size" className="block text-sm font-semibold text-gray-700 mb-3">
+                  Organization Size *
                 </label>
                 <select
-                  id="orgSize"
+                  id="organization_size"
                   name="organization_size"
                   required
                   value={orgFormData.organization_size}
                   onChange={handleOrgFormChange}
                   className="w-full px-4 py-4 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                 >
-                  <option value="">Select organisation size</option>
+                  <option value="">Select organization size</option>
                   <option value="small">Small (1-50 employees)</option>
                   <option value="medium">Medium (51-250 employees)</option>
-                  <option value="large">Large (250+ employees)</option>
                 </select>
               </div>
             </div>
-
-            {/* Row 3: Goal/Objective */}
-            <div>
-              <label htmlFor="objective" className="block text-sm font-semibold text-gray-700 mb-3">
-                Goal/Objective
-              </label>
-              <textarea
-                id="objective"
-                name="mission"
-                rows={4}
-                value={orgFormData.mission}
-                onChange={handleOrgFormChange}
-                className="w-full px-4 py-4 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
-                placeholder="Describe your organisation's main goals and objectives..."
-              />
             </div>
 
-            {/* Row 4: Area of Interest and Country */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Optional Fields */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-6">Optional Information</h3>
+              
+              {/* Goal/Objective */}
+            <div>
+              <label htmlFor="goal" className="block text-sm font-semibold text-gray-700 mb-3">
+                Goal/Objective
+                <span className="text-gray-500 text-sm font-normal ml-2">(200 words max)</span>
+              </label>
+              <textarea
+                id="goal"
+                name="goal"
+                rows={4}
+                maxLength={1200}
+                value={orgFormData.goal}
+                onChange={handleOrgFormChange}
+                className="w-full px-4 py-4 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                placeholder="Describe your organization's main goals and objectives..."
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                {Math.floor((orgFormData.goal?.length || 0) / 6)} / 200 words
+              </p>
+            </div>
+
+              {/* Area of Interest */}
               <div>
-                <label htmlFor="areaOfInterest" className="block text-sm font-semibold text-gray-700 mb-3">
-                  Area of interest
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  Area of Interest
                 </label>
-                <input
-                  id="areaOfInterest"
-                  name="area_of_interest"
-                  type="text"
-                  value={orgFormData.area_of_interest}
-                  onChange={handleOrgFormChange}
-                  className="w-full px-4 py-4 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  placeholder="e.g., Mental health, Youth development"
-                />
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {['Healthcare', 'Mental Health', 'Youth Development', 'Homelessness', 'Disability Services', 'Community Development'].map((area) => (
+                    <label key={area} className="flex items-center space-x-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        name="area_of_interest"
+                        value={area}
+                        checked={orgFormData.area_of_interest.includes(area)}
+                        onChange={handleOrgFormChange}
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">{area}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
+
+              {/* Country and Annual Report */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
                 <label htmlFor="country" className="block text-sm font-semibold text-gray-700 mb-3">
                   Country of Work
@@ -465,13 +498,9 @@ function Dashboard() {
                   placeholder="Enter your primary country of operation"
                 />
               </div>
-            </div>
-
-            {/* Row 5: Annual Report and Common Donors */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
                 <label htmlFor="annualReport" className="block text-sm font-semibold text-gray-700 mb-3">
-                  Annual report
+                  Annual Report URL
                 </label>
                 <input
                   id="annualReport"
@@ -483,17 +512,21 @@ function Dashboard() {
                   placeholder="Link to your latest annual report"
                 />
               </div>
+            </div>
+
+              {/* Common Donors */}
               <div>
                 <label htmlFor="commonDonors" className="block text-sm font-semibold text-gray-700 mb-3">
                   Common donors/Funders
+                  <span className="text-gray-500 text-sm font-normal ml-2">(comma-separated)</span>
                 </label>
-                <input
+                <textarea
                   id="commonDonors"
                   name="common_donors"
-                  type="text"
+                  rows={3}
                   value={orgFormData.common_donors}
                   onChange={handleOrgFormChange}
-                  className="w-full px-4 py-4 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="w-full px-4 py-4 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
                   placeholder="e.g., Gates Foundation, Local Government"
                 />
               </div>
@@ -512,7 +545,7 @@ function Dashboard() {
                     Saving...
                   </>
                 ) : (
-                  'Save Organisation Details'
+                  'Save Organization Details'
                 )}
               </button>
             </div>
