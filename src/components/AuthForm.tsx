@@ -13,20 +13,6 @@ interface SignupStep1Data {
   email: string;
   password: string;
   fullName: string;
-  role: string;
-}
-
-interface SignupStep2Data {
-  organizationName: string;
-  website: string;
-  sector: string;
-  organizationSize: string;
-  mission: string;
-  goal: string;
-  areaOfInterest: string;
-  country: string;
-  annualReport: string;
-  commonDonors: string;
 }
 
 function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
@@ -38,93 +24,38 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
   const [resetEmail, setResetEmail] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
-  const [signupStep, setSignupStep] = useState(1);
   const [signupSuccess, setSignupSuccess] = useState(false);
   const [signupMessage, setSignupMessage] = useState('');
-  const [step1Data, setStep1Data] = useState<SignupStep1Data>({
+  const [signupData, setSignupData] = useState<SignupStep1Data>({
     email: '',
     password: '',
-    fullName: '',
-    role: ''
-  });
-  const [step2Data, setStep2Data] = useState<SignupStep2Data>({
-    organizationName: '',
-    website: '',
-    sector: '',
-    organizationSize: '',
-    mission: '',
-    goal: '',
-    areaOfInterest: '',
-    country: '',
-    annualReport: '',
-    commonDonors: ''
+    fullName: ''
   });
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    fullName: '',
-    organizationName: '',
-    role: ''
+    fullName: ''
   });
 
- const handleStep1Submit = (e: React.FormEvent) => {
-  e.preventDefault();
-  setError(null);
-  setSignupSuccess(false);
-  setSignupMessage('');
-  setSignupStep(2);
-};
-
-  const handleStep2Submit = async (e: React.FormEvent) => {
+  const handleSignupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
       // Create auth user with Supabase - this connects to auth.users table
-      const { data: authData, error: authError } = await signUp(
-        step1Data.email, 
-        step1Data.password, 
+      const { data, error } = await signUp(
+        signupData.email, 
+        signupData.password, 
         {
-          full_name: step1Data.fullName,
-          role: step1Data.role,
+          full_name: signupData.fullName
         }
       );
 
-      if (authError) throw authError;
-
-        // Check if user is immediately confirmed (session exists)
-          // User is confirmed and logged in - create organization record
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-          // Create organization record linked to auth.users via user_id
-        console.log("Step2 data being inserted:", step2Data);
-
-        const { error: orgError } = await supabase
-          .from('organizations')
-          .insert({
-            user_id: authData.user.id,
-            name: step2Data.organizationName,
-            website: step2Data.website,
-            sector: step2Data.sector,
-            organization_size: step2Data.organizationSize,
-            mission: step2Data.mission,
-            goal: step2Data.goal,
-            area_of_interest: step2Data.areaOfInterest,
-            country: step2Data.country,
-            annual_report: step2Data.annualReport,
-            common_donors: step2Data.commonDonors
-          });
-          // Success - user authenticated and organization created
-
-          // No session means email confirmation required before login
-        if (orgError) {
-          console.error('Organization creation error:', orgError);
-          throw new Error('Failed to create organization profile. Please contact support.');
-        }
+      if (error) throw error;
 
         setSignupSuccess(true);
-        setSignupMessage('Account created successfully! You can now sign in to access your dashboard.');
+        setSignupMessage('Account created successfully! You can now sign in and complete your organization profile.');
     } catch (err: any) {
       if (err.message?.includes('over_email_send_rate_limit')) {
         setError('Too many requests. Please wait 40 seconds before trying again for security purposes.');
@@ -171,20 +102,12 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
     }
   };
 
-  const handleStep1InputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setStep1Data({
-      ...step1Data,
+  const handleSignupInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSignupData({
+      ...signupData,
       [e.target.name]: e.target.value
     });
   };
-
-  const handleStep2InputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setStep2Data({
-      ...step2Data,
-      [e.target.name]: e.target.value
-    });
-  };
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
@@ -405,7 +328,7 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
                 </button>
               </div>
             </form>
-          ) : signupStep === 1 ? (
+          ) : (
             signupSuccess ? (
               <div className="space-y-6 text-center">
                 <div className="bg-green-50 border border-green-200 text-green-700 px-6 py-4 rounded-lg">
@@ -415,8 +338,8 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
                 <button
                   onClick={() => {
                     setSignupSuccess(false);
-                    setStep1Data({ email: '', password: '', fullName: '', role: '' });
-                    setSignupSuccess(false);
+                    setSignupData({ email: '', password: '', fullName: '' });
+                    setSignupMessage('');
                     setSignupMessage('');
                     onToggleMode(); // Switch to login mode
                   }}
@@ -426,7 +349,7 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
                 </button>
               </div>
             ) : (
-              <form className="space-y-6" onSubmit={handleStep1Submit}>
+              <form className="space-y-6" onSubmit={handleSignupSubmit}>
                 {error && (
                   <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
                     {error}
@@ -442,8 +365,8 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
                     name="fullName"
                     type="text"
                     required
-                    value={step1Data.fullName}
-                    onChange={handleStep1InputChange}
+                    value={signupData.fullName}
+                    onChange={handleSignupInputChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     placeholder="Enter your name"
                   />
@@ -459,8 +382,8 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
                     type="email"
                     autoComplete="email"
                     required
-                    value={step1Data.email}
-                    onChange={handleStep1InputChange}
+                    value={signupData.email}
+                    onChange={handleSignupInputChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     placeholder="Enter your email address"
                   />
@@ -477,8 +400,8 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
                       type={showPassword ? 'text' : 'password'}
                       autoComplete="new-password"
                       required
-                      value={step1Data.password}
-                      onChange={handleStep1InputChange}
+                      value={signupData.password}
+                      onChange={handleSignupInputChange}
                       className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                       placeholder="Create a secure password"
                     />
@@ -509,222 +432,12 @@ function AuthForm({ mode, onToggleMode, onBack }: AuthFormProps) {
                         Creating Account...
                       </>
                     ) : (
-                      'Continue'
+                      'Create Account'
                     )}
                   </button>
                 </div>
               </form>
             )
-          ) : (
-            <form className="space-y-6" onSubmit={handleStep2Submit}>
-              <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Organization Details</h2>
-                <p className="text-gray-600">Tell us about your organization</p>
-              </div>
-
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                  {error}
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="organizationName" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Organization Name *
-                  </label>
-                  <input
-                    id="organizationName"
-                    name="organizationName"
-                    type="text"
-                    required
-                    value={step2Data.organizationName}
-                    onChange={handleStep2InputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Enter organization name"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="website" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Website
-                  </label>
-                  <input
-                    id="website"
-                    name="website"
-                    type="url"
-                    value={step2Data.website}
-                    onChange={handleStep2InputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    placeholder="https://www.example.com"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="sector" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Sector *
-                  </label>
-                  <select
-                    id="sector"
-                    name="sector"
-                    required
-                    value={step2Data.sector}
-                    onChange={handleStep2InputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  >
-                    <option value="">Select sector</option>
-                    <option value="healthcare">Healthcare</option>
-                    <option value="education">Education</option>
-                    <option value="social-services">Social Services</option>
-                    <option value="environment">Environment</option>
-                    <option value="arts-culture">Arts & Culture</option>
-                    <option value="community-development">Community Development</option>
-                    <option value="research">Research</option>
-                    <option value="nonprofit">Nonprofit</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label htmlFor="organizationSize" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Organization Size *
-                  </label>
-                  <select
-                    id="organizationSize"
-                    name="organizationSize"
-                    required
-                    value={step2Data.organizationSize}
-                    onChange={handleStep2InputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  >
-                    <option value="">Select size</option>
-                    <option value="small">Small (1-50 employees)</option>
-                    <option value="medium">Medium (51-250 employees)</option>
-                    <option value="large">Large (250+ employees)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="mission" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Mission Statement
-                </label>
-                <textarea
-                  id="mission"
-                  name="mission"
-                  rows={3}
-                  value={step2Data.mission}
-                  onChange={handleStep2InputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
-                  placeholder="Describe your organization's mission..."
-                />
-              </div>
-
-              <div>
-                <label htmlFor="goal" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Primary Goal/Objective
-                </label>
-                <textarea
-                  id="goal"
-                  name="goal"
-                  rows={3}
-                  value={step2Data.goal}
-                  onChange={handleStep2InputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
-                  placeholder="What are your main goals and objectives?"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="areaOfInterest" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Area of Interest
-                  </label>
-                  <input
-                    id="areaOfInterest"
-                    name="areaOfInterest"
-                    type="text"
-                    value={step2Data.areaOfInterest}
-                    onChange={handleStep2InputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    placeholder="e.g., Mental health, Youth development"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="country" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Country of Work
-                  </label>
-                  <input
-                    id="country"
-                    name="country"
-                    type="text"
-                    value={step2Data.country}
-                    onChange={handleStep2InputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Primary country of operation"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="annualReport" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Annual Report URL
-                  </label>
-                  <input
-                    id="annualReport"
-                    name="annualReport"
-                    type="url"
-                    value={step2Data.annualReport}
-                    onChange={handleStep2InputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Link to your latest annual report"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="commonDonors" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Common Donors/Funders
-                  </label>
-                  <input
-                    id="commonDonors"
-                    name="commonDonors"
-                    type="text"
-                    value={step2Data.commonDonors}
-                    onChange={handleStep2InputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    placeholder="e.g., Gates Foundation, Local Government"
-                  />
-                </div>
-              </div>
-
-              <div className="flex space-x-4 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setSignupStep(1)}
-                  className="flex-1 bg-gray-200 text-gray-800 py-3 px-6 rounded-lg font-semibold hover:bg-gray-300 transition-all duration-200"
-                >
-                  Back
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                      Creating Account...
-                    </>
-                  ) : (
-                    'Complete Signup'
-                  )}
-                </button>
-              </div>
-            </form>
           )}
           </>
           )}
