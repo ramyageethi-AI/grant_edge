@@ -182,7 +182,6 @@ function Dashboard() {
         country: orgFormData.country,
         annual_report: orgFormData.annual_report,
         common_donors: orgFormData.common_donors
-      };
 
       if (existingOrg) {
         // Update existing organization
