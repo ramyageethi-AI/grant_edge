@@ -201,6 +201,19 @@ function Dashboard() {
         if (error) throw error;
       }
 
+      try {
+  await fetch(
+    "https://fetpmentor.app.n8n.cloud/webhook/386db455-3779-40ee-ae88-dc6f22b482f0",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(orgData)
+    }
+  );
+} catch (webhookErr) {
+  console.warn("n8n webhook failed:", webhookErr);
+}
+
       setOrgFormSuccess(true);
       // Refresh dashboard stats after successful save
       await fetchDashboardStats();
