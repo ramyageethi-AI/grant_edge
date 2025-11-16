@@ -201,19 +201,28 @@ function Dashboard() {
         if (error) throw error;
       }
 
+      // Send webhook to n8n with specified format
       try {
-        console.log("📡 Sending webhook to n8n:", orgData);
-  await fetch(
-    "https://fetpmentor.app.n8n.cloud/webhook/386db455-3779-40ee-ae88-dc6f22b482f0",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(orgData)
-    }
-  );
-} catch (webhookErr) {
-  console.warn("n8n webhook failed:", webhookErr);
-}
+        const webhookData = {
+          organizationName: orgFormData.name,
+          areasOfInterest: orgFormData.area_of_interest || "",
+          priorityCountries: orgFormData.country || "",
+          email: user?.email || "",
+          website: orgFormData.website || ""
+        };
+        
+        console.log("📡 Sending webhook to n8n:", webhookData);
+        await fetch(
+          "https://fetpmentor.app.n8n.cloud/webhook/386db455-3779-40ee-ae88-dc6f22b482f0",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(webhookData)
+          }
+        );
+      } catch (webhookErr) {
+        console.warn("n8n webhook failed:", webhookErr);
+      }
 
       setOrgFormSuccess(true);
       // Refresh dashboard stats after successful save
