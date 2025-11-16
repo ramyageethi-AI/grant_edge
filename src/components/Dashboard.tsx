@@ -48,6 +48,8 @@ function Dashboard() {
   const [orgFormLoading, setOrgFormLoading] = useState(false);
   const [orgFormError, setOrgFormError] = useState<string | null>(null);
   const [orgFormSuccess, setOrgFormSuccess] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchLoading, setSearchLoading] = useState(false);
 
   useEffect(() => {
     if (user?.id) {
@@ -242,6 +244,22 @@ function Dashboard() {
     }
   };
 
+  const handleGrantSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    
+    setSearchLoading(true);
+    try {
+      // Open the n8n form URL in a new tab with the search query as a parameter
+      const searchUrl = `https://fetpmentor.app.n8n.cloud/form/dca6dc62-ad0c-41bc-9e26-53f9fd6b6524?query=${encodeURIComponent(searchQuery)}`;
+      window.open(searchUrl, '_blank');
+    } catch (error) {
+      console.error('Error opening search form:', error);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
   const handleSignOut = async () => {
     await signOut();
   };
@@ -252,6 +270,38 @@ function Dashboard() {
       <div className="bg-gradient-to-r from-blue-600 to-green-600 rounded-xl p-8 text-white">
         <h1 className="text-3xl font-bold mb-2">Welcome back, {user?.user_metadata?.full_name || 'User'}!</h1>
         <p className="text-blue-100 text-lg">Ready to discover new funding opportunities and manage your proposals?</p>
+        
+        {/* Grant Search Field */}
+        <div className="mt-6">
+          <form onSubmit={handleGrantSearch} className="flex flex-col sm:flex-row gap-3 max-w-2xl">
+            <div className="flex-1">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search for grants (e.g., healthcare, education, youth development...)"
+                className="w-full px-4 py-3 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 transition-all duration-200"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={searchLoading || !searchQuery.trim()}
+              className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[120px]"
+            >
+              {searchLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                  Searching...
+                </>
+              ) : (
+                <>
+                  <Search className="w-5 h-5 mr-2" />
+                  Search Grants
+                </>
+              )}
+            </button>
+          </form>
+        </div>
       </div>
 
       {/* Stats Cards */}
